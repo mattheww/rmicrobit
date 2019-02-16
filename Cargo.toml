@@ -1,0 +1,20 @@
+[package]
+name = "microbit-blinkenlights"
+version = "0.1.0"
+edition = "2018"
+description = "Drive the micro:bit 5×5 LED display."
+authors = ["Matthew Woodcraft <matthew@woodcraft.me.uk>"]
+documentation = "https://mjw.woodcraft.me.uk/2019-mb/microbit_blinkenlights/"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/mattheww/microbit-blinkenlights/"
+
+[dependencies]
+microbit = "0.7.0"
+
+[dev-dependencies]
+cortex-m-semihosting = { version = "0.3.2" }
+panic-semihosting = "0.5.1"
+cortex-m = "0.5"
+cortex-m-rtfm = "0.4.1"
+numtoa = "0.2.3"
