@@ -164,9 +164,9 @@ pub fn initialise_pins(p: &mut nrf51::Peripherals) {
         p.GPIO.pin_cnf[ii].write(|w| w.dir().output());
     }
 
-    // Set all cols high except the first, so each row lights only one LED
+    // Set all cols high.
     p.GPIO.outset.write(|w| unsafe { w.bits(
-        (FIRST_COL_PIN+1 ..= LAST_COL_PIN).map(|pin| 1<<pin).sum()
+        (FIRST_COL_PIN ..= LAST_COL_PIN).map(|pin| 1<<pin).sum()
     )});
 }
 
