@@ -176,7 +176,7 @@ pub fn initialise_pins(p: &mut nrf51::Peripherals) {
 /// Light LEDs in a single matrix row.
 ///
 /// In the specified row, lights exactly the LEDs listed in 'cols'.
-/// Turns off all LEDs in the other internal rows.
+/// Turns off all LEDs in the other matrix rows.
 fn display_row_leds(gpio: &mut nrf51::GPIO, row: usize, cols: ColumnSet) {
     // To light an LED, we set the row bit and clear the col bit.
     let rows_to_set = 1<<(FIRST_ROW_PIN+row);
