@@ -57,21 +57,24 @@ impl ColumnSet {
 }
 
 
+/// A 'compiled' representation of the part of an image displayed on a single
+/// matrix row.
+///
 /// Effectively a map brightness -> set of columns
 #[derive(Copy, Clone)]
-struct GreyscalePlan (
+struct RowPlan (
     [ColumnSet; BRIGHTNESSES],
 );
 
-impl GreyscalePlan {
+impl RowPlan {
 
-    const fn default() -> GreyscalePlan {
-        GreyscalePlan([ColumnSet::empty(); BRIGHTNESSES])
+    const fn default() -> RowPlan {
+        RowPlan([ColumnSet::empty(); BRIGHTNESSES])
     }
 
-    fn from_image_row<T>(row: usize, image: &T) -> GreyscalePlan
+    fn from_image_row<T>(row: usize, image: &T) -> RowPlan
             where T: Render + ?Sized {
-        let mut plan = GreyscalePlan::default();
+        let mut plan = RowPlan::default();
         for col in 0..COLS {
             if let Some((x, y)) = LED_LAYOUT[col][row] {
                 let brightness = image.brightness_at(x, y);
@@ -93,17 +96,17 @@ impl GreyscalePlan {
 /// to [`Display::set_frame()`].
 #[derive(Copy, Clone)]
 pub struct Frame (
-    [GreyscalePlan; ROWS],
+    [RowPlan; ROWS],
 );
 
 impl Frame {
 
     /// Return a new frame, initially blank.
     pub const fn default() -> Frame {
-        Frame([GreyscalePlan::default(); ROWS])
+        Frame([RowPlan::default(); ROWS])
     }
 
-    fn get_plan(&self, row: usize) -> &GreyscalePlan {
+    fn get_plan(&self, row: usize) -> &RowPlan {
         &self.0[row]
     }
 
@@ -116,7 +119,7 @@ impl Frame {
     /// ```
     pub fn set<T>(&mut self, image: &T) where T: Render + ?Sized {
         for row in 0..ROWS {
-            self.0[row] = GreyscalePlan::from_image_row(row, image);
+            self.0[row] = RowPlan::from_image_row(row, image);
         }
     }
 
@@ -233,7 +236,7 @@ pub struct Display {
     // brightness level (0..=8) to process next
     next_brightness : u8,
     frame           : Frame,
-    current_plan    : GreyscalePlan,
+    current_plan    : RowPlan,
 }
 
 impl Display {
@@ -244,7 +247,7 @@ impl Display {
             row_strobe: 0,
             next_brightness: 0,
             frame: Frame::default(),
-            current_plan: GreyscalePlan::default(),
+            current_plan: RowPlan::default(),
         }
     }
 
