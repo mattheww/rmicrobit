@@ -4,7 +4,7 @@
 pub const BRIGHTNESSES : usize = 10;
 
 /// The maximum brightness level for greyscale images (ie, 9; the minimum is 0).
-pub const MAX_BRIGHTNESS : usize = BRIGHTNESSES-1;
+pub const MAX_BRIGHTNESS : u8 = (BRIGHTNESSES as u8)-1;
 
 
 /// A trait providing the information that Display needs to render an image.

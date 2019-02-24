@@ -74,15 +74,15 @@ impl GreyscalePlan {
         let mut plan = GreyscalePlan::default();
         for col in 0..COLS {
             if let Some((x, y)) = LED_LAYOUT[col][row] {
-                let brightness = image.brightness_at(x, y) as usize;
-                plan.0[brightness].set(col);
+                let brightness = image.brightness_at(x, y);
+                plan.0[brightness as usize].set(col);
             }
         }
         plan
     }
 
-    fn lit_cols(&self, brightness: usize) -> ColumnSet {
-        self.0[brightness]
+    fn lit_cols(&self, brightness: u8) -> ColumnSet {
+        self.0[brightness as usize]
     }
 
 }
@@ -231,7 +231,7 @@ pub struct Display {
     // index (0..=2) of the row being displayed
     row_strobe      : usize,
     // brightness level (0..=8) to process next
-    next_brightness : usize,
+    next_brightness : u8,
     frame           : Frame,
     current_plan    : GreyscalePlan,
 }
@@ -331,7 +331,7 @@ impl Display {
             }
             if !self.current_plan.lit_cols(self.next_brightness).is_empty() {
                 timer.program_secondary(
-                    GREYSCALE_TIMINGS[self.next_brightness-1]
+                    GREYSCALE_TIMINGS[(self.next_brightness-1) as usize]
                 );
                 break;
             }
