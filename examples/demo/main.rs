@@ -7,6 +7,7 @@ use rtfm::app;
 use microbit::hal::nrf51;
 
 use microbit_blinkenlights::display::{self, Display, Frame};
+use microbit_blinkenlights::microbit_matrix::MicrobitFrame;
 
 
 mod animation;
@@ -22,7 +23,7 @@ const APP: () = {
     static mut TIMER1: nrf51::TIMER1 = ();
     static mut TIMER2: nrf51::TIMER2 = ();
     static mut RTC0: nrf51::RTC0 = ();
-    static mut DISPLAY: Display = ();
+    static mut DISPLAY: Display<MicrobitFrame> = ();
     static mut DEMO: demo::Demo = ();
 
     #[init]
@@ -34,7 +35,7 @@ const APP: () = {
         let mut p: nrf51::Peripherals = device;
 
         buttons::initialise_pins(&mut p);
-        display::initialise_pins(&mut p);
+        display::initialise_control(&mut p.GPIO);
         display::initialise_timer(&mut p.TIMER1);
 
         // Starting the low-frequency clock (needed for RTC to work)
@@ -56,7 +57,7 @@ const APP: () = {
             RTC0 : p.RTC0,
             DEMO : demo::Demo::new(),
             DISPLAY : {
-                let mut frame = Frame::default();
+                let mut frame = MicrobitFrame::const_default();
                 frame.set(demo::initial_frame());
                 let mut display = Display::new();
                 display.set_frame(&frame);
@@ -68,13 +69,13 @@ const APP: () = {
     #[interrupt(priority = 2,
                 resources = [TIMER1, GPIO, DISPLAY])]
     fn TIMER1() {
-        resources.DISPLAY.handle_event(resources.TIMER1, &mut resources.GPIO);
+        resources.DISPLAY.handle_event(resources.TIMER1, resources.GPIO);
     }
 
     #[interrupt(priority = 1,
                 resources = [RTC0, DISPLAY, DEMO])]
     fn RTC0() {
-        static mut frame: Frame = Frame::default();
+        static mut frame: MicrobitFrame = MicrobitFrame::const_default();
 
         let event_reg = &resources.RTC0.events_tick;
         event_reg.write(|w| unsafe {w.bits(0)} );
@@ -93,7 +94,7 @@ const APP: () = {
     #[interrupt(priority = 1,
                 resources = [GPIOTE, TIMER2, DISPLAY, DEMO])]
     fn GPIOTE() {
-        static mut frame: Frame = Frame::default();
+        static mut frame: MicrobitFrame = MicrobitFrame::const_default();
 
         let a_pressed = buttons::a_pressed(
             &mut resources.GPIOTE, &mut resources.TIMER2);

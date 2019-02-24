@@ -68,15 +68,16 @@
 //! # Frames
 //!
 //! Types implementing [`Render`] aren't used directly with the [`Display`];
-//! instead they're used to update a [`Frame`] instance which is in turn
-//! passed to the `Display`.
+//! instead they're used to update a [`MicrobitFrame`] instance which is in
+//! turn passed to the `Display`.
 //!
-//! A `Frame` instance is a 'compiled' representation of a 5×5 greyscale
-//! image, in a form that's more directly usable by the display code.
+//! A `MicrobitFrame` instance is a 'compiled' representation of a 5×5
+//! greyscale image, in a form that's more directly usable by the display
+//! code.
 //!
-//! This is exposed in the public API so that you can construct the `Frame`
-//! representation in code running at a low priority. Then only
-//! [`Display::set_frame()`] has to be called in code that can't be
+//! This is exposed in the public API so that you can construct the
+//! `MicrobitFrame` representation in code running at a low priority. Then
+//! only [`Display::set_frame()`] has to be called in code that can't be
 //! interrupted by the display timer.
 //!
 //! # Timer integration
@@ -117,15 +118,17 @@
 //!
 //! # Usage
 //!
-//! When your program starts, call [`display::initialise_pins()`] and
-//! [`display::initialise_timer()`], and create a [`Display`] struct.
+//! When your program starts, call [`display::initialise_control()`] (passing
+//! it the gpio peripheral) and [`display::initialise_timer()`] (passing it
+//! the timer), and create a [`Display`] struct (a `Display<MicrobitFrame>`).
 //!
 //! In an interrupt handler for the timer you used for `initialise_timer()`,
-//! call [`Display::handle_event()`], passing it the timer and the gpio pins.
+//! call [`Display::handle_event()`], passing it the timer and the gpio
+//! peripheral.
 //!
-//! To change what's displayed, call [`Display::set_frame()`] with a [`Frame`]
-//! instance. You can do that at at any time, so long as you're not
-//! interrupting, or interruptable by, `handle_event()`.
+//! To change what's displayed, call [`Display::set_frame()`] with a
+//! [`MicrobitFrame`] instance. You can do that at at any time, so long as
+//! you're not interrupting, or interruptable by, `handle_event()`.
 //!
 //! Once you've called `set_frame()`, you are free to reuse the `Frame`
 //! instance.
@@ -143,6 +146,7 @@
 //! [`Display`]: display::Display
 //! [`Frame`]: display::Frame
 //! [`GreyscaleImage`]: image::GreyscaleImage
+//! [`MicrobitFrame`]: microbit_matrix::MicrobitFrame
 //! [`Render`]: render::Render
 //! [`Scrollable`]: scrolling::Scrollable
 //! [`ScrollingImages`]: scrolling::ScrollingImages
@@ -151,6 +155,7 @@
 //!
 
 pub mod display;
+pub mod display_control;
 pub mod display_timer;
 pub mod font;
 pub mod image;
@@ -158,3 +163,6 @@ pub mod render;
 pub mod scrolling;
 pub mod scrolling_text;
 
+pub mod microbit_control;
+pub mod microbit_matrix;
+pub mod microbit_timer;

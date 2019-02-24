@@ -1,56 +1,34 @@
-//! The display driver and Frame type.
+//! The display driver and Frame trait.
 
-use microbit::hal::nrf51;
-
+use crate::display_control::DisplayControl;
 use crate::display_timer::DisplayTimer;
 use crate::render::{Render, BRIGHTNESSES, MAX_BRIGHTNESS};
 
-const fn bit_range(lo: usize, count: usize) -> u32 {
-    ((1<<count) - 1) << lo
-}
 
-const COLS : usize = 9;
-const FIRST_COL_PIN : usize = 4;
-const LAST_COL_PIN : usize = FIRST_COL_PIN + COLS - 1;
-const COL_BITS : u32 = bit_range(FIRST_COL_PIN, COLS);
-
-const ROWS : usize = 3;
-const FIRST_ROW_PIN : usize = 13;
-const LAST_ROW_PIN : usize = FIRST_ROW_PIN + ROWS - 1;
-const ROW_BITS : u32 = bit_range(FIRST_ROW_PIN, ROWS);
-
-/// Gives the LED (x, y) coordinates for a given pin row and column.
-/// The origin is in the top-left.
-const LED_LAYOUT: [[Option<(usize, usize)>; 3]; 9] = [
-    [Some((0, 0)), Some((4, 2)), Some((2, 4))],
-    [Some((2, 0)), Some((0, 2)), Some((4, 4))],
-    [Some((4, 0)), Some((2, 2)), Some((0, 4))],
-    [Some((4, 3)), Some((1, 0)), Some((0, 1))],
-    [Some((3, 3)), Some((3, 0)), Some((1, 1))],
-    [Some((2, 3)), Some((3, 4)), Some((2, 1))],
-    [Some((1, 3)), Some((1, 4)), Some((3, 1))],
-    [Some((0, 3)), None,         Some((4, 1))],
-    [Some((1, 2)), None,         Some((3, 2))],
-];
-
-
+/// A set of matrix column indices.
+///
+/// Supports maximum index 15.
 #[derive(Copy, Clone)]
 struct ColumnSet (u16);
 
 impl ColumnSet {
 
+    /// Returns a new empty set.
     const fn empty() -> ColumnSet {
         ColumnSet(0)
     }
 
+    /// Adds column index 'col' to the set.
     fn set(&mut self, col: usize) {
         self.0 |= 1<<col;
     }
 
-    fn as_pins(&self) -> u32 {
-        (self.0 as u32) << FIRST_COL_PIN
+    /// Returns the set as a bitmap in a u32 (LSB is index 0).
+    fn as_u32(&self) -> u32 {
+        self.0 as u32
     }
 
+    /// Says whether the set is empty.
     fn is_empty(&self) -> bool {
         self.0 == 0
     }
@@ -60,78 +38,137 @@ impl ColumnSet {
 /// A 'compiled' representation of the part of an image displayed on a single
 /// matrix row.
 ///
-/// Effectively a map brightness -> set of columns
+/// RowPlans are created and contained by [`Frame`]s.
+// This is effectively a map brightness -> set of columns
 #[derive(Copy, Clone)]
-struct RowPlan (
+pub struct RowPlan (
     [ColumnSet; BRIGHTNESSES],
 );
 
 impl RowPlan {
 
-    const fn default() -> RowPlan {
+    /// Returns a new RowPlan with all LEDs brightness 0.
+    pub const fn default() -> RowPlan {
         RowPlan([ColumnSet::empty(); BRIGHTNESSES])
     }
 
-    fn from_image_row<T>(row: usize, image: &T) -> RowPlan
-            where T: Render + ?Sized {
-        let mut plan = RowPlan::default();
-        for col in 0..COLS {
-            if let Some((x, y)) = LED_LAYOUT[col][row] {
-                let brightness = image.brightness_at(x, y);
-                plan.0[brightness as usize].set(col);
-            }
-        }
-        plan
+    /// Resets all LEDs to brightness 0.
+    fn clear(&mut self) {
+        self.0 = RowPlan::default().0;
     }
 
+    /// Says which LEDs have the specified brightness.
     fn lit_cols(&self, brightness: u8) -> ColumnSet {
         self.0[brightness as usize]
     }
 
+    /// Sets a single LED to the specified brightness.
+    fn light_col(&mut self, brightness: u8, col: usize) {
+        self.0[brightness as usize].set(col);
+    }
+
 }
 
-/// 'Compiled' representation of a 5×5 image to be displayed.
+
+/// Description of a device's LED layout.
+///
+/// This describes the correspondence between the visible layout of LEDs and
+/// the pins controlling them.
+pub trait Matrix {
+    /// The number of pins connected to LED columns.
+    ///
+    /// At present this can be at most 16.
+    const MATRIX_COLS: usize;
+
+    /// The number of pins connected to LED rows.
+    ///
+    /// This should normally be a small number (eg 3).
+    const MATRIX_ROWS: usize;
+
+    // Note that nothing uses IMAGE_COLS and IMAGE_ROWS directly; having these
+    // constants allows us to document them.
+
+    /// The number of visible LED columns.
+    const IMAGE_COLS: usize;
+
+    /// The number of visible LED rows.
+    const IMAGE_ROWS: usize;
+
+    /// Returns the image coordinates (x, y) to use for the LED at (col, row).
+    ///
+    /// Returns None if (col, row) doesn't control an LED.
+    ///
+    /// Otherwise the return value is in (0..IMAGE_COLS, 0..IMAGE_ROWS), with
+    /// (0, 0) representing the top left.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the provided col and row are out of range 0..MATRIX_COLS and
+    /// 0..MATRIX_ROWS.
+
+    fn image_coordinates(col: usize, row: usize) -> Option<(usize, usize)>;
+}
+
+
+/// A 'Compiled' representation of an image to be displayed.
 ///
 /// `Frame`s are populated from images implementing [`Render`], then passed on
 /// to [`Display::set_frame()`].
-#[derive(Copy, Clone)]
-pub struct Frame (
-    [RowPlan; ROWS],
-);
+///
+/// Implementations of `Frame` specify the [`Matrix`] used to convert between
+/// image and matrix coordinates, and act like an array of [`RowPlan`]s.
+pub trait Frame: Copy + Default {
 
-impl Frame {
+    /// The Matrix used to convert between image and matrix coordinates.
+    type Mtx: Matrix;
 
-    /// Return a new frame, initially blank.
-    pub const fn default() -> Frame {
-        Frame([RowPlan::default(); ROWS])
-    }
+    /// The number of pins connected to LED columns.
+    const COLS: usize = Self::Mtx::MATRIX_COLS;
 
-    fn get_plan(&self, row: usize) -> &RowPlan {
-        &self.0[row]
-    }
+    /// The number of pins connected to LED rows.
+    const ROWS: usize = Self::Mtx::MATRIX_ROWS;
 
-    /// Store a new image into the frame.
+    /// Returns a reference to the RowPlan for a row of LEDs.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `row` is not in the range 0..ROWS
+    fn row_plan(&self, row: usize) -> &RowPlan;
+
+    /// Returns a mutable reference to the RowPlan for a row of LEDs.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `row` is not in the range 0..ROWS
+    fn row_plan_mut(&mut self, row: usize) -> &mut RowPlan;
+
+
+    /// Stores a new image into the frame.
     ///
     /// Example:
     ///
     /// ```
     /// frame.set(GreyscaleImage::blank());
     /// ```
-    pub fn set<T>(&mut self, image: &T) where T: Render + ?Sized {
-        for row in 0..ROWS {
-            self.0[row] = RowPlan::from_image_row(row, image);
+    fn set<T>(&mut self, image: &T) where T: Render + ?Sized {
+        for row in 0..Self::ROWS {
+            let plan = self.row_plan_mut(row);
+            plan.clear();
+            for col in 0..Self::COLS {
+                if let Some((x, y)) = Self::Mtx::image_coordinates(col, row) {
+                    let brightness = image.brightness_at(x, y);
+                    plan.light_col(brightness, col);
+                }
+            }
         }
     }
-
 }
-
-
 
 
 // With a 16µs period, 375 ticks is 6ms
 const CYCLE_TICKS: u16 = 375;
 
-const GREYSCALE_TIMINGS : [u16; BRIGHTNESSES-2] = [
+const GREYSCALE_TIMINGS: [u16; BRIGHTNESSES-2] = [
 //   Delay,   Bright, Ticks, Duration, Relative power
 //   375,  //   0,      0,      0µs,    ---
      373,  //   1,      2,     32µs,    inf
@@ -145,7 +182,7 @@ const GREYSCALE_TIMINGS : [u16; BRIGHTNESSES-2] = [
 //     0,  //   9,    375,   6000µs,   188%
 ];
 
-/// Start the timer you plan to use with a [`Display`].
+/// Starts the timer you plan to use with a [`Display`].
 ///
 /// Call this once before using a [`Display`].
 ///
@@ -156,54 +193,27 @@ pub fn initialise_timer(timer: &mut impl DisplayTimer) {
 }
 
 
-/// Program the micro:bit LED GPIO pins for use with Display.
+/// Initialises the display hardware you plan to use with a [`Display`].
 ///
-/// Call this once before using a Display.
-pub fn initialise_pins(p: &mut nrf51::Peripherals) {
-    for ii in FIRST_COL_PIN ..= LAST_COL_PIN {
-        p.GPIO.pin_cnf[ii].write(|w| w.dir().output());
-    }
-    for ii in FIRST_ROW_PIN ..= LAST_ROW_PIN {
-        p.GPIO.pin_cnf[ii].write(|w| w.dir().output());
-    }
-
-    // Set all cols high.
-    p.GPIO.outset.write(|w| unsafe { w.bits(
-        (FIRST_COL_PIN ..= LAST_COL_PIN).map(|pin| 1<<pin).sum()
-    )});
-}
-
-/// Light LEDs in a single matrix row.
+/// Call this once before using a [`Display`].
 ///
-/// In the specified row, lights exactly the LEDs listed in 'cols'.
-/// Turns off all LEDs in the other matrix rows.
-fn display_row_leds(gpio: &mut nrf51::GPIO, row: usize, cols: ColumnSet) {
-    // To light an LED, we set the row bit and clear the col bit.
-    let rows_to_set = 1<<(FIRST_ROW_PIN+row);
-    let rows_to_clear = ROW_BITS ^ rows_to_set;
-    let cols_to_clear = cols.as_pins();
-    let cols_to_set = COL_BITS ^ cols_to_clear;
-
-    gpio.outset.write(|w| unsafe { w.bits(rows_to_set | cols_to_set) });
-    gpio.outclr.write(|w| unsafe { w.bits(rows_to_clear | cols_to_clear) });
-}
-
-/// Light additional LEDs in the current matrix row.
-///
-/// Affects the row most recently passed to display_row_leds().
-/// Lights the LEDs listed in 'cols', in addition to any already lit.
-fn light_current_row_leds(gpio: &mut nrf51::GPIO, cols: ColumnSet) {
-    gpio.outclr.write(|w| unsafe {
-        w.bits(cols.as_pins())
-    });
+/// This calls the [`DisplayControl`]'s
+/// [`initialise_for_display()`][DisplayControl::initialise_for_display]
+/// implementation.
+pub fn initialise_control(control: &mut impl DisplayControl) {
+    control.initialise_for_display();
 }
 
 
-/// Manages the micro:bit LED display.
+/// Manages a small LED display.
 ///
-/// There should normally be a single `Display` instance in a program.
+/// There should normally be a single `Display` instance for a single piece of
+/// display hardware.
 ///
-/// Call [`initialise_pins()`] and [`initialise_timer()`] before using a
+/// Display is generic over a [`Frame`] type, which holds image data suitable
+/// for display on a particular piece of hardware.
+///
+/// Call [`initialise_control()`] and [`initialise_timer()`] before using a
 /// `Display`.
 ///
 /// # Example
@@ -214,12 +224,12 @@ fn light_current_row_leds(gpio: &mut nrf51::GPIO, cols: ColumnSet) {
 /// const APP: () = {
 ///     static mut GPIO: nrf51::GPIO = ();
 ///     static mut TIMER1: nrf51::TIMER1 = ();
-///     static mut DISPLAY: Display = ();
+///     static mut DISPLAY: Display<MicrobitFrame> = ();
 ///
 ///     #[init]
 ///     fn init() -> init::LateResources {
 ///         let mut p: nrf51::Peripherals = device;
-///         display::initialise_pins(&mut p);
+///         display::initialise_control(&mut p.GPIO);
 ///         display::initialise_timer(&mut p.TIMER1);
 ///         init::LateResources {
 ///             GPIO : p.GPIO,
@@ -230,25 +240,25 @@ fn light_current_row_leds(gpio: &mut nrf51::GPIO, cols: ColumnSet) {
 /// }
 /// ```
 
-pub struct Display {
-    // index (0..=2) of the row being displayed
+pub struct Display<F: Frame> {
+    // index (0..F::ROWS) of the row being displayed
     row_strobe      : usize,
-    // brightness level (0..=8) to process next
+    // brightness level (0..=MAX_BRIGHTNESS) to process next
     next_brightness : u8,
-    frame           : Frame,
-    current_plan    : RowPlan,
+    frame           : F,
+    current_plan    : RowPlan
 }
 
-impl Display {
+impl<F: Frame> Display<F> {
 
     /// Creates a Display instance, initially holding a blank image.
-    pub fn new() -> Display {
-        Display {
+    pub fn new() -> Display<F> {
+        return Display {
             row_strobe: 0,
             next_brightness: 0,
-            frame: Frame::default(),
+            frame: F::default(),
             current_plan: RowPlan::default(),
-        }
+        };
     }
 
     /// Accepts a new image to be displayed.
@@ -266,7 +276,7 @@ impl Display {
     /// ```
     /// #[interrupt(priority = 1, resources = [RTC0, DISPLAY])]
     /// fn RTC0() {
-    ///     static mut frame: Frame = Frame::default();
+    ///     static mut frame: MicrobitFrame = MicrobitFrame::const_default();
     ///     let event_reg = &resources.RTC0.events_tick;
     ///     event_reg.write(|w| unsafe {w.bits(0)} );
     ///     frame.set(GreyscaleImage::blank());
@@ -275,7 +285,7 @@ impl Display {
     ///     });
     /// }
     /// ```
-    pub fn set_frame(&mut self, frame: &Frame) {
+    pub fn set_frame(&mut self, frame: &F) {
         self.frame = *frame;
     }
 
@@ -284,16 +294,16 @@ impl Display {
     /// Leaves the timer's secondary alarm enabled iff there are any
     /// intermediate brightnesses in the current image.
     fn render_row(&mut self,
-                  gpio: &mut nrf51::GPIO,
+                  control: &mut impl DisplayControl,
                   timer: &mut impl DisplayTimer) {
-        assert! (self.row_strobe < ROWS);
+        assert! (self.row_strobe < F::ROWS);
         self.row_strobe += 1;
-        if self.row_strobe == ROWS {self.row_strobe = 0};
+        if self.row_strobe == F::ROWS {self.row_strobe = 0};
 
-        let plan = self.frame.get_plan(self.row_strobe);
+        let plan = self.frame.row_plan(self.row_strobe);
 
         let lit_cols = plan.lit_cols(MAX_BRIGHTNESS);
-        display_row_leds(gpio, self.row_strobe, lit_cols);
+        control.display_row_leds(self.row_strobe, lit_cols.as_u32());
 
         // We copy this so that we'll continue using it for the rest of this
         // 'tick' even if set_frame() is called part way through
@@ -309,13 +319,13 @@ impl Display {
     ///
     /// This is called after an interrupt from the secondary alarm.
     fn render_subrow(&mut self,
-                     gpio: &mut nrf51::GPIO,
+                     control: &mut impl DisplayControl,
                      timer: &mut impl DisplayTimer) {
         // When this method is called, next_brightness is an intermediate
         // brightness in the range 1..8 (the one that it's time to display).
 
         let additional_cols = self.current_plan.lit_cols(self.next_brightness);
-        light_current_row_leds(gpio, additional_cols);
+        control.light_current_row_leds(additional_cols.as_u32());
 
         self.program_next_brightness(timer);
     }
@@ -348,11 +358,15 @@ impl Display {
     /// The `timer` parameter must be the same each time you call this method,
     /// and the same as originally passed to [`initialise_timer()`].
     ///
-    /// As well as updating the LED state, this method may call the timer's
+    /// The `control` parameter must be the same each time you call this method,
+    /// and the same as originally passed to [`initialise_control()`].
+    ///
+    /// As well as updating the LED state by calling [`DisplayControl`]
+    /// methods on `control`, this method may update the timer state by
+    /// calling the timer's
     /// [`program_secondary()`][DisplayTimer::program_secondary],
     /// [`enable_secondary()`][DisplayTimer::enable_secondary], and/or
-    /// [`disable_secondary()`][DisplayTimer::disable_secondary] methods to
-    /// update the timer state.
+    /// [`disable_secondary()`][DisplayTimer::disable_secondary] methods.
     ///
     /// This method uses the timer's
     /// [`check_primary()`][DisplayTimer::check_primary] and
@@ -367,18 +381,18 @@ impl Display {
     /// ````
     /// #[interrupt(priority = 2, resources = [TIMER1, GPIO, DISPLAY])]
     /// fn TIMER1() {
-    ///    resources.DISPLAY.handle_event(resources.TIMER1, &mut resources.GPIO);
+    ///    resources.DISPLAY.handle_event(resources.TIMER1, resources.GPIO);
     /// }
     /// ````
     pub fn handle_event(&mut self,
                         timer: &mut impl DisplayTimer,
-                        gpio: &mut nrf51::GPIO) {
+                        control: &mut impl DisplayControl) {
         let row_timer_fired = timer.check_primary();
         let brightness_timer_fired = timer.check_secondary();
         if row_timer_fired {
-            self.render_row(gpio, timer);
+            self.render_row(control, timer);
         } else if brightness_timer_fired {
-            self.render_subrow(gpio, timer);
+            self.render_subrow(control, timer);
         }
 
     }
