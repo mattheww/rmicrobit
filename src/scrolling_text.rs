@@ -1,5 +1,7 @@
 //! Support for scrolling ascii text horizontally.
 
+use tiny_led_matrix::Render;
+
 use crate::font;
 use crate::image::BitImage;
 use crate::scrolling::{Animate, ScrollingState, Scrollable};
@@ -41,6 +43,15 @@ impl Scrollable for ScrollingStaticText {
 
     fn subimage(&self, index: usize) -> &BitImage {
         font::character(self.message[index])
+    }
+
+}
+
+
+impl Render for ScrollingStaticText {
+
+    fn brightness_at(&self, x: usize, y: usize) -> u8 {
+        self.current_brightness_at(x, y)
     }
 
 }
@@ -104,6 +115,14 @@ impl Scrollable for ScrollingBufferedText {
 
     fn subimage(&self, index: usize) -> &BitImage {
         font::character(self.message[index])
+    }
+
+}
+
+impl Render for ScrollingBufferedText {
+
+    fn brightness_at(&self, x: usize, y: usize) -> u8 {
+        self.current_brightness_at(x, y)
     }
 
 }

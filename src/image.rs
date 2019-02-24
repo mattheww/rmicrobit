@@ -1,6 +1,6 @@
 //! Static 5×5 greyscale and black-and-white images.
 
-use crate::render::{Render, MAX_BRIGHTNESS};
+use tiny_led_matrix::{Render, MAX_BRIGHTNESS};
 
 /// A 5×5 image supporting the full range of brightnesses for each LED.
 ///

@@ -6,7 +6,7 @@
 //! [`Scrollable`]: scrolling::Scrollable
 //! [`Animate`]: scrolling::Animate
 
-use crate::render::Render;
+use tiny_led_matrix::Render;
 
 
 /// The state of an animation.
@@ -60,8 +60,10 @@ impl ScrollingState {
 
 /// A horizontally scrolling sequence of 5×5 images.
 ///
-/// `Scrollable`s automatically implement [`Animate`] and [`Render`]; the
-/// rendered image is the current state of the animation.
+/// `Scrollable`s automatically implement [`Animate`].
+///
+/// When a Scrollable also implements Render, the rendered image is the
+/// current state of the animation.
 pub trait Scrollable {
 
     /// The type of the underlying 5×5 images.
@@ -80,6 +82,21 @@ pub trait Scrollable {
     /// A reference to the underlying image at the specified index.
     fn subimage(&self, index: usize) -> &Self::Subimage;
 
+    /// Returns the brightness value for a single LED in the current state.
+    ///
+    /// Use this to implement Render.
+    fn current_brightness_at(&self, x: usize, y: usize) -> u8 {
+        if self.state().index > self.length() {return 0}
+        let state = self.state();
+        let (index, x) = if x + state.pixel < 5 {
+            if state.index == 0 {return 0}
+            (state.index - 1, x + state.pixel)
+        } else {
+            if state.index == self.length() {return 0}
+            (state.index, x + state.pixel - 5)
+        };
+        self.subimage(index).brightness_at(x, y)
+    }
 }
 
 
@@ -98,24 +115,6 @@ impl<T : Scrollable> Animate for T {
             self.state_mut().tick();
         }
     }
-}
-
-
-impl<T: Scrollable> Render for T {
-
-    fn brightness_at(&self, x: usize, y: usize) -> u8 {
-        if self.is_finished() {return 0}
-        let state = self.state();
-        let (index, x) = if x + state.pixel < 5 {
-            if state.index == 0 {return 0}
-            (state.index - 1, x + state.pixel)
-        } else {
-            if state.index == self.length() {return 0}
-            (state.index, x + state.pixel - 5)
-        };
-        self.subimage(index).brightness_at(x, y)
-    }
-
 }
 
 
@@ -169,6 +168,14 @@ impl<T: Render + 'static> Scrollable for ScrollingImages<T> {
 
     fn subimage(&self, index: usize) -> &T {
         &self.images[index]
+    }
+
+}
+
+impl<T: Render + 'static> Render for ScrollingImages<T> {
+
+    fn brightness_at(&self, x: usize, y: usize) -> u8 {
+        self.current_brightness_at(x, y)
     }
 
 }

@@ -5,7 +5,7 @@
 //!
 //! # Scope
 //!
-//! The crate includes:
+//! Together with `tiny-led-matrix`, this crate provides:
 //! - support for driving the LED display from a timer interrupt;
 //! - ten levels of brightness for each LED;
 //! - simple 5×5 greyscale and black-and-white image types;
@@ -13,8 +13,8 @@
 //! - support for scrolling text.
 //!
 //! The crate doesn't define interrupt handlers directly; instead it provides
-//! a function to be called from a timer interrupt, and a trait describing the
-//! interface it needs to program the timer.
+//! a function to be called from a timer interrupt. It knows how to program
+//! `TIMER1` to provide that interrupt.
 //!
 //! # Demo
 //!
@@ -23,9 +23,9 @@
 //!
 //! # Coordinate system
 //!
-//! LEDs are identified using (x,y) coordinates as follows:
+//! The LEDs are identified using (x,y) coordinates as follows:
 //!
-//! ```
+//! ```text
 //! (0,0) ... (4,0)
 //!  ...  ...  ...
 //! (4,0) ... (4,4)
@@ -49,12 +49,11 @@
 //!
 //! # Images and Render
 //!
-//! The [`render::Render`] trait defines the interface that an image-like type
-//! needs to provide in order to be displayed.
+//! The [`Render`] trait defines the interface that an image-like type needs
+//! to provide in order to be displayed.
 //!
-//! It contains a single function:
-//! [`brightness_at(x, y)`][render::Render::brightness_at], returning a
-//! brightness level.
+//! It contains a single function: [`brightness_at(x,
+//! y)`][Render::brightness_at], returning a brightness level.
 //!
 //! The [`image`] module provides two static image types implementing `Render`:
 //! - [`GreyscaleImage`], allowing all 9 levels (using one byte for each LED)
@@ -84,19 +83,33 @@
 //!
 //! The `Display` expects to control a single timer.
 //!
-//! The [`display_timer::DisplayTimer`] trait defines the interface that it
-//! needs.
+//! At present the only timer suported by this crate is the micro:bit's
+//! `TIMER1`.
 //!
-//! At present this crate provides only one [`DisplayTimer`] implementation,
-//! which uses the nrf51's `TIMER1`.
-//!
-//! The system is designed to use a 6ms period to light each of the three
-//! internal rows, so that the entire display is updated every 18ms. But the
-//! [`DisplayTimer`] trait doesn't strictly require this.
+//! This uses a 6ms period to light each of the three internal LED rows, so
+//! that the entire display is updated every 18ms.
 //!
 //! When rendering greyscale images, the `Display` requests extra interrupts
 //! within each 6ms period. It only requests interrupts for the greyscale
 //! levels which are actually required for what's currently being displayed.
+//!
+//! # The `MicrobitGpio` and `MicrobitTimer1` wrappers
+//!
+//! The [`MicrobitGpio`] and [`MicrobitTimer1`] wrappers are tuple-like
+//! structs holding a reference to a `nrf51::GPIO` or `nrf51::TIMER1`
+//! respectively. They provide the interface between the `Display` and the
+//! micro:bit's GPIO and timer peripherals.
+//!
+//! They are typically created with code something like this:
+//!
+//! ```ignore
+//! let mut p: nrf51::Peripherals = …;
+//! &mut MicrobitGpio(&mut p.GPIO)
+//! &mut MicrobitTimer1(&mut p.TIMER1)
+//! ```
+//!
+//! If it makes resource management easier, you can remake the wrappers from
+//! the underlying peripherals each time they need to be used.
 //!
 //! # Fonts
 //!
@@ -118,17 +131,18 @@
 //!
 //! # Usage
 //!
-//! When your program starts, call [`display::initialise_control()`] (passing
-//! it the gpio peripheral) and [`display::initialise_timer()`] (passing it
-//! the timer), and create a [`Display`] struct (a `Display<MicrobitFrame>`).
+//! When your program starts, call [`initialise_control()`] (passing it a
+//! [`MicrobitGpio`]) and [`initialise_timer()`] (passing it a
+//! [`MicrobitTimer1`]), and create a [`Display`] struct (a
+//! `Display<MicrobitFrame>`).
 //!
 //! In an interrupt handler for the timer you used for `initialise_timer()`,
-//! call [`Display::handle_event()`], passing it the timer and the gpio
-//! peripheral.
+//! call [`Display::handle_event()`], passing it a `MicrobitTimer1` and a
+//! `MicrobitGpio`.
 //!
 //! To change what's displayed, call [`Display::set_frame()`] with a
-//! [`MicrobitFrame`] instance. You can do that at at any time, so long as
-//! you're not interrupting, or interruptable by, `handle_event()`.
+//! [`MicrobitFrame`] instance. You can do that at any time, so long as you're
+//! not interrupting, or interruptable by, `handle_event()`.
 //!
 //! Once you've called `set_frame()`, you are free to reuse the `Frame`
 //! instance.
@@ -140,29 +154,34 @@
 //!
 //! [`Animate`]: scrolling::Animate
 //! [`BitImage`]: image::BitImage
-//! [`Display::handle_event()`]: display::Display::handle_event
-//! [`Display::set_frame()`]: display::Display::set_frame
-//! [`DisplayTimer`]: display_timer::DisplayTimer
-//! [`Display`]: display::Display
-//! [`Frame`]: display::Frame
+//! [`DisplayTimer`]: tiny_led_matrix::DisplayTimer
 //! [`GreyscaleImage`]: image::GreyscaleImage
-//! [`MicrobitFrame`]: microbit_matrix::MicrobitFrame
-//! [`Render`]: render::Render
 //! [`Scrollable`]: scrolling::Scrollable
 //! [`ScrollingImages`]: scrolling::ScrollingImages
 //! [`ScrollingBufferedText`]: scrolling_text::ScrollingBufferedText
 //! [`ScrollingStaticText`]: scrolling_text::ScrollingStaticText
 //!
 
-pub mod display;
-pub mod display_control;
-pub mod display_timer;
+#[doc(no_inline)]
+pub use tiny_led_matrix::{
+    Render,
+    MAX_BRIGHTNESS,
+    Display,
+    Frame,
+    initialise_control,
+    initialise_timer,
+};
+
+mod microbit_control;
+mod microbit_matrix;
+mod microbit_timer;
+
 pub mod font;
 pub mod image;
-pub mod render;
 pub mod scrolling;
 pub mod scrolling_text;
 
-pub mod microbit_control;
-pub mod microbit_matrix;
-pub mod microbit_timer;
+pub use microbit_control::MicrobitGpio;
+pub use microbit_matrix::MicrobitFrame;
+pub use microbit_timer::MicrobitTimer1;
+

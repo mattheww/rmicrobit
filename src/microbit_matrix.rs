@@ -3,13 +3,15 @@
 //! This module describes the correspondence between the visible layout of
 //! micro:bit's LEDs and the pins controlling them.
 //!
-//! [`Matrix`]: crate::display::Matrix
-//! [`Frame`]: crate::display::Frame
+//! [`Matrix`]: tiny_led_matrix::Matrix
+//! [`Frame`]: tiny_led_matrix::Frame
 
-use crate::display::{Frame, Matrix, RowPlan};
+use tiny_led_matrix::{Frame, Matrix, RowPlan};
 use crate::microbit_control::{{MATRIX_COLS, MATRIX_ROWS}};
 
 /// Implementation of [`Matrix`] for the microbit's LED display.
+///
+/// [`Matrix`]: tiny_led_matrix::Matrix
 pub struct MicrobitMatrix ();
 
 /// Gives the LED (x, y) coordinates for a given pin row and column.
@@ -46,6 +48,8 @@ impl Matrix for MicrobitMatrix {
 
 
 /// Implementation of [`Frame`] for the microbit's LED display.
+///
+/// [`Frame`]: tiny_led_matrix::Frame
 #[derive(Copy, Clone)]
 pub struct MicrobitFrame (
     [RowPlan; MicrobitFrame::ROWS]

@@ -11,6 +11,7 @@ repository = "https://github.com/mattheww/microbit-blinkenlights/"
 
 [dependencies]
 microbit = "0.7.0"
+tiny-led-matrix = "0.1"
 
 [dev-dependencies]
 cortex-m-semihosting = { version = "0.3.2" }

@@ -1,5 +1,5 @@
+use microbit_blinkenlights::Render;
 use microbit_blinkenlights::image::GreyscaleImage;
-use microbit_blinkenlights::render::Render;
 use microbit_blinkenlights::scrolling::{Animate, ScrollingImages};
 use microbit_blinkenlights::scrolling_text;
 
