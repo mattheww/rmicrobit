@@ -72,7 +72,7 @@ fn check_cc(timer: &mut nrf51::TIMER1, index: usize) -> bool {
     let event_reg = &timer.events_compare[index];
     let fired = event_reg.read().bits() != 0;
     if fired {event_reg.write(|w| unsafe {w.bits(0)} )}
-    return fired;
+    fired
 }
 
 /// Implementation of [`DisplayTimer`] for the nrf51 `TIMER1`.
@@ -108,11 +108,11 @@ impl DisplayTimer for nrf51::TIMER1 {
     }
 
     fn check_primary(&mut self) -> bool {
-        return check_cc(self, 0);
+        check_cc(self, 0)
     }
 
     fn check_secondary(&mut self) -> bool {
-        return check_cc(self, 1);
+        check_cc(self, 1)
     }
 
 }

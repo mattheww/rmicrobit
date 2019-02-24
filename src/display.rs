@@ -6,7 +6,7 @@ use crate::display_timer::DisplayTimer;
 use crate::render::{Render, BRIGHTNESSES, MAX_BRIGHTNESS};
 
 const fn bit_range(lo: usize, count: usize) -> u32 {
-    return ((1<<count) - 1) << lo
+    ((1<<count) - 1) << lo
 }
 
 const COLS : usize = 9;
@@ -40,7 +40,7 @@ struct ColumnSet (u16);
 impl ColumnSet {
 
     const fn empty() -> ColumnSet {
-        return ColumnSet(0);
+        ColumnSet(0)
     }
 
     fn set(&mut self, col: usize) {
@@ -48,11 +48,11 @@ impl ColumnSet {
     }
 
     fn as_pins(&self) -> u32 {
-        return (self.0 as u32) << FIRST_COL_PIN;
+        (self.0 as u32) << FIRST_COL_PIN
     }
 
     fn is_empty(&self) -> bool {
-        return self.0 == 0;
+        self.0 == 0
     }
 }
 
@@ -66,7 +66,7 @@ struct GreyscalePlan (
 impl GreyscalePlan {
 
     const fn default() -> GreyscalePlan {
-        return GreyscalePlan([ColumnSet::empty(); BRIGHTNESSES]);
+        GreyscalePlan([ColumnSet::empty(); BRIGHTNESSES])
     }
 
     fn from_image_row<T>(row: usize, image: &T) -> GreyscalePlan
@@ -82,7 +82,7 @@ impl GreyscalePlan {
     }
 
     fn lit_cols(&self, brightness: usize) -> ColumnSet {
-        return self.0[brightness];
+        self.0[brightness]
     }
 
 }
@@ -100,11 +100,11 @@ impl Frame {
 
     /// Return a new frame, initially blank.
     pub const fn default() -> Frame {
-        return Frame([GreyscalePlan::default(); ROWS]);
+        Frame([GreyscalePlan::default(); ROWS])
     }
 
     fn get_plan(&self, row: usize) -> &GreyscalePlan {
-        return &self.0[row];
+        &self.0[row]
     }
 
     /// Store a new image into the frame.
@@ -240,12 +240,12 @@ impl Display {
 
     /// Creates a Display instance, initially holding a blank image.
     pub fn new() -> Display {
-        return Display {
+        Display {
             row_strobe: 0,
             next_brightness: 0,
             frame: Frame::default(),
             current_plan: GreyscalePlan::default(),
-        };
+        }
     }
 
     /// Accepts a new image to be displayed.

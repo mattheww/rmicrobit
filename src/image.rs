@@ -41,7 +41,7 @@ impl GreyscaleImage {
 impl Render for GreyscaleImage {
 
     fn brightness_at(&self, x: usize, y: usize) -> u8 {
-        return self.0[y][x];
+        self.0[y][x]
     }
 }
 
