@@ -34,7 +34,7 @@ pub fn character(index: u8) -> &'static BitImage {
     &self::pendolino::PENDOLINO3[index - PRINTABLE_START]
 }
 
-const fn font_entry(data: [u8; 5]) -> BitImage {
+const fn font_entry(data: &[u8; 5]) -> BitImage {
     // Note the data in the pendolino font uses the opposite column numbering
     // system to BitImage.
     const fn row_bits(byte: u8) -> [u8; 5] {[
