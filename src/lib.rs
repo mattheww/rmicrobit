@@ -14,7 +14,7 @@
 //!
 //! The crate doesn't define interrupt handlers directly; instead it provides
 //! a function to be called from a timer interrupt. It knows how to program
-//! `TIMER1` to provide that interrupt.
+//! one of the micro:bit's timers to provide that interrupt.
 //!
 //! # Demo
 //!
@@ -81,10 +81,8 @@
 //!
 //! # Timer integration
 //!
-//! The `Display` expects to control a single timer.
-//!
-//! At present the only timer suported by this crate is the micro:bit's
-//! `TIMER1`.
+//! The `Display` expects to control a single timer. It can use the
+//! micro:bit's `TIMER0`, `TIMER1`, or `TIMER2`.
 //!
 //! This uses a 6ms period to light each of the three internal LED rows, so
 //! that the entire display is updated every 18ms.
@@ -92,6 +90,14 @@
 //! When rendering greyscale images, the `Display` requests extra interrupts
 //! within each 6ms period. It only requests interrupts for the greyscale
 //! levels which are actually required for what's currently being displayed.
+//!
+//! ## Technical details
+//!
+//! The timer is set to 16-bit mode, using a 62.5kHz clock (16 µs ticks). It
+//! resets every 375 ticks.
+//!
+//! The display code uses the CC0 and CC1 capture/compare registers. You are
+//! free to use CC2 and CC3.
 //!
 //! # Fonts
 //!
@@ -113,11 +119,16 @@
 //!
 //! # Usage
 //!
-//! When your program starts, call [`initialise_display()`], and create a
-//! [`Display`] struct (a `Display<MicrobitFrame>`).
+//! Choose a timer to drive the display from (`TIMER0`, `TIMER1`, or
+//! `TIMER2`).
 //!
-//! In an interrupt handler for the timer you used for `initialise_display()`,
-//! call [`handle_display_event()`], passing it the timer and the gpio pins.
+//! When your program starts:
+//! * call [`initialise_display()`], passing it the timer you chose and and
+//! the gpio peripheral
+//! * create a [`Display`] struct (a `Display<MicrobitFrame>`).
+//!
+//! In an interrupt handler for the same timer, call
+//! [`handle_display_event()`].
 //!
 //! To change what's displayed: create a [`MicrobitFrame`] instance, use
 //! [`.set()`](`Frame::set()`) to put an image (something implementing
@@ -169,7 +180,8 @@ use microbit_control::MicrobitGpio;
 
 /// Initialises the micro:bit hardware to use the display driver.
 ///
-/// The timer parameter must be `nrf51::TIMER1`.
+/// You can use `nrf51::TIMER0`, `nrf51::TIMER1`, or `nrf51::TIMER2` for the
+/// timer parameter.
 ///
 /// Assumes the timer and the GPIO port are in the state they would have after
 /// system reset.
@@ -190,7 +202,9 @@ pub fn initialise_display<'a, T>(
 
 /// Updates the LEDs and timer state during a timer interrupt.
 ///
-/// The timer parameter must be `nrf51::TIMER1`.
+/// You can use `nrf51::TIMER0`, `nrf51::TIMER1`, or `nrf51::TIMER2` for the
+/// timer parameter (it must be the same timer you used for
+/// [`initialise_display()`]).
 ///
 /// Call this in an interrupt handler for the timer you're using.
 ///
