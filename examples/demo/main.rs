@@ -5,8 +5,7 @@ extern crate panic_semihosting;
 
 use rtfm::app;
 use microbit::hal::nrf51;
-use microbit_blinkenlights::{self, Display, Frame,
-                             MicrobitGpio, MicrobitFrame, MicrobitTimer1};
+use microbit_blinkenlights::{self, Display, Frame, MicrobitFrame};
 
 mod animation;
 mod buttons;
@@ -33,10 +32,7 @@ const APP: () = {
         let mut p: nrf51::Peripherals = device;
 
         buttons::initialise_pins(&mut p);
-        microbit_blinkenlights::initialise_control(
-            &mut MicrobitGpio(&mut p.GPIO));
-        microbit_blinkenlights::initialise_timer(
-            &mut MicrobitTimer1(&mut p.TIMER1));
+        microbit_blinkenlights::initialise_display(&mut p.TIMER1, &mut p.GPIO);
 
         // Starting the low-frequency clock (needed for RTC to work)
         p.CLOCK.tasks_lfclkstart.write(|w| unsafe { w.bits(1) });
@@ -69,9 +65,10 @@ const APP: () = {
     #[interrupt(priority = 2,
                 resources = [TIMER1, GPIO, DISPLAY])]
     fn TIMER1() {
-        resources.DISPLAY.handle_event(
-            &mut MicrobitTimer1(&mut resources.TIMER1),
-            &mut MicrobitGpio(&mut resources.GPIO),
+        microbit_blinkenlights::handle_display_event(
+            &mut resources.DISPLAY,
+            resources.TIMER1,
+            resources.GPIO,
         );
     }
 

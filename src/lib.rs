@@ -93,24 +93,6 @@
 //! within each 6ms period. It only requests interrupts for the greyscale
 //! levels which are actually required for what's currently being displayed.
 //!
-//! # The `MicrobitGpio` and `MicrobitTimer1` wrappers
-//!
-//! The [`MicrobitGpio`] and [`MicrobitTimer1`] wrappers are tuple-like
-//! structs holding a reference to a `nrf51::GPIO` or `nrf51::TIMER1`
-//! respectively. They provide the interface between the `Display` and the
-//! micro:bit's GPIO and timer peripherals.
-//!
-//! They are typically created with code something like this:
-//!
-//! ```ignore
-//! let mut p: nrf51::Peripherals = …;
-//! &mut MicrobitGpio(&mut p.GPIO)
-//! &mut MicrobitTimer1(&mut p.TIMER1)
-//! ```
-//!
-//! If it makes resource management easier, you can remake the wrappers from
-//! the underlying peripherals each time they need to be used.
-//!
 //! # Fonts
 //!
 //! The [`font`] module provides 5×5 representations of the ascii printable
@@ -131,21 +113,22 @@
 //!
 //! # Usage
 //!
-//! When your program starts, call [`initialise_control()`] (passing it a
-//! [`MicrobitGpio`]) and [`initialise_timer()`] (passing it a
-//! [`MicrobitTimer1`]), and create a [`Display`] struct (a
-//! `Display<MicrobitFrame>`).
+//! When your program starts, call [`initialise_display()`], and create a
+//! [`Display`] struct (a `Display<MicrobitFrame>`).
 //!
-//! In an interrupt handler for the timer you used for `initialise_timer()`,
-//! call [`Display::handle_event()`], passing it a `MicrobitTimer1` and a
-//! `MicrobitGpio`.
+//! In an interrupt handler for the timer you used for `initialise_display()`,
+//! call [`handle_display_event()`], passing it the timer and the gpio pins.
 //!
-//! To change what's displayed, call [`Display::set_frame()`] with a
-//! [`MicrobitFrame`] instance. You can do that at any time, so long as you're
-//! not interrupting, or interruptable by, `handle_event()`.
+//! To change what's displayed: create a [`MicrobitFrame`] instance, use
+//! [`.set()`](`Frame::set()`) to put an image (something implementing
+//! [`Render`]) in it, then call [`Display::set_frame()`]. Note you'll have to
+//! `use microbit_blinkenlights::Frame` to make `set()` available.
 //!
-//! Once you've called `set_frame()`, you are free to reuse the `Frame`
-//! instance.
+//! You can call `set_frame()` at any time, so long as you're not
+//! interrupting, or interruptable by, `handle_display_event()`.
+//!
+//! Once you've called `set_frame()`, you are free to reuse the
+//! `MicrobitFrame`.
 //!
 //!
 //! [cortex-m-rtfm]: https://japaric.github.io/cortex-m-rtfm/book/en/
@@ -168,8 +151,6 @@ pub use tiny_led_matrix::{
     MAX_BRIGHTNESS,
     Display,
     Frame,
-    initialise_control,
-    initialise_timer,
 };
 
 mod microbit_control;
@@ -181,7 +162,64 @@ pub mod image;
 pub mod scrolling;
 pub mod scrolling_text;
 
-pub use microbit_control::MicrobitGpio;
 pub use microbit_matrix::MicrobitFrame;
-pub use microbit_timer::MicrobitTimer1;
+
+
+use microbit_control::MicrobitGpio;
+
+/// Initialises the micro:bit hardware to use the display driver.
+///
+/// The timer parameter must be `nrf51::TIMER1`.
+///
+/// Assumes the timer and the GPIO port are in the state they would have after
+/// system reset.
+///
+/// # Example
+///
+/// ```ignore
+/// let mut p: nrf51::Peripherals = _;
+/// microbit_blinkenlights::initialise_display(&mut p.TIMER1, &mut p.GPIO);
+/// ```
+pub fn initialise_display<'a, T>(
+    timer: &'a mut T,
+    gpio: &mut microbit::hal::nrf51::GPIO)
+    where T: microbit_timer::Nrf51Timer<'a> {
+    tiny_led_matrix::initialise_control(&mut MicrobitGpio(gpio));
+    tiny_led_matrix::initialise_timer(&mut timer.as_display_timer());
+}
+
+/// Updates the LEDs and timer state during a timer interrupt.
+///
+/// The timer parameter must be `nrf51::TIMER1`.
+///
+/// Call this in an interrupt handler for the timer you're using.
+///
+/// Takes care of clearing the timer's event registers.
+///
+/// See [`Display::handle_event()`] for details.
+///
+/// # Example
+///
+/// In the style of `cortex-m-rtfm` v0.4:
+///
+/// ```ignore
+/// #[interrupt(priority = 2, resources = [TIMER1, GPIO, DISPLAY])]
+/// fn TIMER1() {
+///     microbit_blinkenlights::handle_display_event(
+///         &mut resources.DISPLAY,
+///         resources.TIMER1,
+///         resources.GPIO,
+///     );
+/// }
+/// ```
+pub fn handle_display_event<'a, T>(
+    display: &mut Display<MicrobitFrame>,
+    timer: &'a mut T,
+    gpio: &mut microbit::hal::nrf51::GPIO)
+    where T: microbit_timer::Nrf51Timer<'a> {
+    display.handle_event(
+        &mut timer.as_display_timer(),
+        &mut MicrobitGpio(gpio),
+    );
+}
 

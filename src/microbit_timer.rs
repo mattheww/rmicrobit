@@ -6,6 +6,13 @@ use microbit::hal::nrf51;
 
 use tiny_led_matrix::DisplayTimer;
 
+pub trait Nrf51Timer<'a> {
+    type Wrapper: DisplayTimer;
+
+    /// Returns a wrapper for the peripheral, implementing DisplayTimer.
+    fn as_display_timer(&'a mut self) -> Self::Wrapper;
+}
+
 /// Checks whether the event for a CC register has been generated, then clears
 /// the event register.
 fn check_cc(timer: &mut nrf51::TIMER1, index: usize) -> bool {
@@ -68,5 +75,14 @@ impl DisplayTimer for MicrobitTimer1 <'_> {
         return check_cc(&mut self.0, 1);
     }
 
+}
+
+
+impl<'a> Nrf51Timer<'a> for nrf51::TIMER1 {
+    type Wrapper = MicrobitTimer1<'a>;
+
+    fn as_display_timer(&mut self) -> MicrobitTimer1 {
+        MicrobitTimer1(self)
+    }
 }
 
