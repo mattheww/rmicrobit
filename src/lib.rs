@@ -141,6 +141,7 @@
 //! Once you've called `set_frame()`, you are free to reuse the
 //! `MicrobitFrame`.
 //!
+//! See [`doc_example`] for a complete working example.
 //!
 //! [cortex-m-rtfm]: https://japaric.github.io/cortex-m-rtfm/book/en/
 //! [dal]: https://lancaster-university.github.io/microbit-docs/
@@ -174,6 +175,8 @@ pub mod scrolling;
 pub mod scrolling_text;
 
 pub use microbit_matrix::MicrobitFrame;
+
+pub mod doc_example;
 
 
 use microbit_control::MicrobitGpio;
