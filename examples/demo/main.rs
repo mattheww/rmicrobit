@@ -75,26 +75,26 @@ const APP: () = {
     #[interrupt(priority = 1,
                 resources = [RTC0, DISPLAY, DEMO])]
     fn RTC0() {
-        static mut frame: MicrobitFrame = MicrobitFrame::const_default();
+        static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
 
         let event_reg = &resources.RTC0.events_tick;
         event_reg.write(|w| unsafe {w.bits(0)} );
         if resources.DEMO.is_animating() {
-            frame.set(&resources.DEMO.next_animation_frame());
+            FRAME.set(&resources.DEMO.next_animation_frame());
         } else if resources.DEMO.is_scrolling() {
-            frame.set(resources.DEMO.next_scrolling_frame());
+            FRAME.set(resources.DEMO.next_scrolling_frame());
         } else {
             return
         }
         resources.DISPLAY.lock(|display| {
-            display.set_frame(frame);
+            display.set_frame(FRAME);
         });
     }
 
     #[interrupt(priority = 1,
                 resources = [GPIOTE, TIMER2, DISPLAY, DEMO])]
     fn GPIOTE() {
-        static mut frame: MicrobitFrame = MicrobitFrame::const_default();
+        static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
 
         let a_pressed = buttons::a_pressed(
             &mut resources.GPIOTE, &mut resources.TIMER2);
@@ -108,9 +108,9 @@ const APP: () = {
         }
         if a_pressed || b_pressed {
             if resources.DEMO.is_static() {
-                frame.set(resources.DEMO.current_image());
+                FRAME.set(resources.DEMO.current_image());
                 resources.DISPLAY.lock(|display| {
-                    display.set_frame(frame);
+                    display.set_frame(FRAME);
                 });
             }
         }
