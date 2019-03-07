@@ -8,6 +8,7 @@ use crate::scrolling::{Animate, ScrollingState, Scrollable};
 
 /// A [`Scrollable`] displaying a static ascii byte-string slice.
 #[derive(Default)]
+#[derive(Copy, Clone)]
 pub struct ScrollingStaticText {
     message: &'static [u8],
     state: ScrollingState,
@@ -58,6 +59,7 @@ impl Render for ScrollingStaticText {
 
 
 /// A [`Scrollable`] displaying an ascii byte-string of up to 128 bytes.
+#[derive(Copy, Clone)]
 pub struct ScrollingBufferedText {
     length: usize,
     message: [u8; 128],

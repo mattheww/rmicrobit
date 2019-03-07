@@ -31,6 +31,7 @@ pub trait Animate {
 /// Implementations of [`Scrollable`] should contain one of these and make it
 /// available via `state()` and `state_mut()`.
 #[derive(Default)]
+#[derive(Copy, Clone)]
 pub struct ScrollingState {
     // index of the character being scrolled on, or about to be scrolled on
     index: usize,
@@ -121,6 +122,7 @@ impl<T : Scrollable> Animate for T {
 /// A [`Scrollable`] displaying a static slice of arbitrary images.
 ///
 /// The underlying images can be any sized type that implements [`Render`].
+#[derive(Copy, Clone)]
 pub struct ScrollingImages<T: Render + 'static> {
     images: &'static [T],
     state: ScrollingState,

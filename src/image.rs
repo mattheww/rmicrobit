@@ -5,6 +5,7 @@ use tiny_led_matrix::{Render, MAX_BRIGHTNESS};
 /// A 5×5 image supporting the full range of brightnesses for each LED.
 ///
 /// Uses 25 bytes of storage.
+#[derive(Copy, Clone)]
 pub struct GreyscaleImage (
     [[u8; 5]; 5]
 );
@@ -58,6 +59,7 @@ impl Render for &GreyscaleImage {
 ///
 /// For display, each pixel is treated as having brightness either 0 or
 /// MAX_BRIGHTNESS.
+#[derive(Copy, Clone)]
 pub struct BitImage (
     [u8; 5]
 );
