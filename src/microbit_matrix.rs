@@ -50,7 +50,7 @@ impl Matrix for MicrobitMatrix {
 /// Implementation of [`Frame`] for the microbit's LED display.
 ///
 /// [`Frame`]: tiny_led_matrix::Frame
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct MicrobitFrame (
     [RowPlan; MicrobitFrame::ROWS]
 );

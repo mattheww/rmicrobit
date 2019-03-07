@@ -31,7 +31,7 @@ pub trait Animate {
 /// Implementations of [`Scrollable`] should contain one of these and make it
 /// available via `state()` and `state_mut()`.
 #[derive(Default)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct ScrollingState {
     // index of the character being scrolled on, or about to be scrolled on
     index: usize,
