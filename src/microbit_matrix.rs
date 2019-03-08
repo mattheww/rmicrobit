@@ -47,9 +47,16 @@ impl Matrix for MicrobitMatrix {
 
 
 
-/// Implementation of [`Frame`] for the microbit's LED display.
+/// A 'Compiled' representation of a 5×5 image to be displayed.
+///
+/// Use the [`.set()`](`Frame::set`) method to store an image (something
+/// implementing [`Render`]) in the frame.
+///
+/// Note you'll have to `use microbit::display::Frame` to make `set()`
+/// available.
 ///
 /// [`Frame`]: tiny_led_matrix::Frame
+/// [`Render`]: tiny_led_matrix::Render
 #[derive(Copy, Clone, Debug)]
 pub struct MicrobitFrame (
     [RowPlan; MicrobitFrame::ROWS]
