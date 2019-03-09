@@ -17,5 +17,5 @@ tiny-led-matrix = "0.1"
 cortex-m-semihosting = { version = "0.3.2" }
 panic-semihosting = "0.5.1"
 cortex-m = "0.5"
-cortex-m-rtfm = "0.4.1"
+cortex-m-rtfm = "0.4.2"
 numtoa = "0.2.3"
