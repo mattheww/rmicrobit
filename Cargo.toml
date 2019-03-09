@@ -1,6 +1,6 @@
 [package]
 name = "microbit-blinkenlights"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2018"
 description = "Drive the micro:bit 5×5 LED display."
 authors = ["Matthew Woodcraft <matthew@woodcraft.me.uk>"]
