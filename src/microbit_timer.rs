@@ -40,7 +40,7 @@ impl DisplayTimer for MicrobitTimer <'_> {
         let timer = &self.0;
         timer.prescaler.write(|w| unsafe { w.bits(8) });
         timer.cc[0].write(|w| unsafe { w.bits(ticks as u32) });
-        timer.bitmode.write(|w| w.bitmode()._32bit());
+        timer.bitmode.write(|w| w.bitmode()._16bit());
         timer.shorts.write(|w| w.compare0_clear().enabled());
         timer.intenset.write(|w| w.compare0().set());
         timer.tasks_start.write(|w| unsafe { w.bits(1) });
