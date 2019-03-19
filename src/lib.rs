@@ -198,8 +198,8 @@ use microbit_timer::MicrobitTimer;
 /// let mut p: nrf51::Peripherals = _;
 /// microbit_blinkenlights::initialise_display(&mut p.TIMER1, &mut p.GPIO);
 /// ```
-pub fn initialise_display<'a, T>(
-    timer: &'a mut T,
+pub fn initialise_display<T>(
+    timer: &mut T,
     gpio: &mut microbit::hal::nrf51::GPIO)
     where T: Deref <Target = nrf51::timer0::RegisterBlock> {
     tiny_led_matrix::initialise_control(&mut MicrobitGpio(gpio));
@@ -232,9 +232,9 @@ pub fn initialise_display<'a, T>(
 ///     );
 /// }
 /// ```
-pub fn handle_display_event<'a, T>(
+pub fn handle_display_event<T>(
     display: &mut Display<MicrobitFrame>,
-    timer: &'a mut T,
+    timer: &mut T,
     gpio: &mut microbit::hal::nrf51::GPIO)
     where T: Deref <Target = nrf51::timer0::RegisterBlock> {
     display.handle_event(
