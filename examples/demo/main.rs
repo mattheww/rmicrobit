@@ -5,7 +5,8 @@ extern crate panic_semihosting;
 
 use rtfm::app;
 use microbit::hal::nrf51;
-use microbit_blinkenlights::{self, Display, Frame, MicrobitFrame};
+use microbit_blinkenlights::{self, Display, Frame, MicrobitDisplayTimer, MicrobitFrame};
+use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
 
 mod animation;
 mod buttons;
@@ -17,9 +18,10 @@ const APP: () = {
 
     static mut GPIO: nrf51::GPIO = ();
     static mut GPIOTE: nrf51::GPIOTE = ();
-    static mut TIMER1: nrf51::TIMER1 = ();
+    static mut DISPLAY_TIMER: MicrobitDisplayTimer<nrf51::TIMER1> = ();
+
     static mut TIMER2: nrf51::TIMER2 = ();
-    static mut RTC0: nrf51::RTC0 = ();
+    static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
     static mut DISPLAY: Display<MicrobitFrame> = ();
     static mut DEMO: demo::Demo = ();
 
@@ -32,25 +34,28 @@ const APP: () = {
         let mut p: nrf51::Peripherals = device;
 
         buttons::initialise_pins(&mut p);
-        microbit_blinkenlights::initialise_display(&mut p.TIMER1, &mut p.GPIO);
+
+        let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
+        microbit_blinkenlights::initialise_display(&mut timer, &mut p.GPIO);
 
         // Starting the low-frequency clock (needed for RTC to work)
         p.CLOCK.tasks_lfclkstart.write(|w| unsafe { w.bits(1) });
         while p.CLOCK.events_lfclkstarted.read().bits() == 0 {}
-        p.CLOCK.events_lfclkstarted.write(|w| unsafe { w.bits(0) });
+        p.CLOCK.events_lfclkstarted.reset();
 
-        // 16Hz; 62.5ms period
-        p.RTC0.prescaler.write(|w| unsafe {w.bits(2047)});
-        p.RTC0.evtenset.write(|w| w.tick().set_bit());
-        p.RTC0.intenset.write(|w| w.tick().set_bit());
-        p.RTC0.tasks_start.write(|w| unsafe { w.bits(1) });
+        let mut rtc0 = LoResTimer::new(p.RTC0);
+        // 62.5ms period
+        rtc0.set_frequency(FREQ_16HZ);
+        rtc0.enable_tick_event();
+        rtc0.enable_tick_interrupt();
+        rtc0.start();
 
         init::LateResources {
             GPIO : p.GPIO,
             GPIOTE : p.GPIOTE,
-            TIMER1 : p.TIMER1,
+            DISPLAY_TIMER : timer,
             TIMER2 : p.TIMER2,
-            RTC0 : p.RTC0,
+            ANIM_TIMER : rtc0,
             DEMO : demo::Demo::new(),
             DISPLAY : {
                 let mut frame = MicrobitFrame::const_default();
@@ -63,22 +68,21 @@ const APP: () = {
     }
 
     #[interrupt(priority = 2,
-                resources = [TIMER1, GPIO, DISPLAY])]
+                resources = [DISPLAY_TIMER, GPIO, DISPLAY])]
     fn TIMER1() {
         microbit_blinkenlights::handle_display_event(
             &mut resources.DISPLAY,
-            resources.TIMER1,
+            resources.DISPLAY_TIMER,
             resources.GPIO,
         );
     }
 
     #[interrupt(priority = 1,
-                resources = [RTC0, DISPLAY, DEMO])]
+                resources = [ANIM_TIMER, DISPLAY, DEMO])]
     fn RTC0() {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
 
-        let event_reg = &resources.RTC0.events_tick;
-        event_reg.write(|w| unsafe {w.bits(0)} );
+        &resources.ANIM_TIMER.clear_tick_event();
         if resources.DEMO.is_animating() {
             FRAME.set(&resources.DEMO.next_animation_frame());
         } else if resources.DEMO.is_scrolling() {

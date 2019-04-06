@@ -2,69 +2,62 @@
 //!
 //! [`DisplayTimer`]: tiny_led_matrix::DisplayTimer
 
-use microbit::hal::nrf51;
+use microbit::hal::hi_res_timer::{As16BitTimer, HiResTimer, Nrf51Timer, TimerCc, TimerFrequency};
 use tiny_led_matrix::DisplayTimer;
 
-/// Wrapper for an nrf51 `TIMER` for passing to the display code.
+/// A TIMER peripheral programmed to manage the display.
 ///
-/// This implements the [`DisplayTimer`] trait.
-///
-/// [`DisplayTimer`]: tiny_led_matrix::DisplayTimer
-pub(crate) struct MicrobitTimer <'a> (pub &'a nrf51::timer0::RegisterBlock);
-
-
-/// Checks whether the event for a CC register has been generated,
-/// then clears the event register.
-fn check_cc(timer: &nrf51::timer0::RegisterBlock, index: usize) -> bool {
-    let event_reg = &timer.events_compare[index];
-    let fired = event_reg.read().bits() != 0;
-    if fired {event_reg.write(|w| unsafe {w.bits(0)} )}
-    fired
-}
-
-/// Implementation of DisplayTimer for one of the nrf51 `TIMER` peripherals.
+/// `MicrobitDisplayTimer` instances implement the [`DisplayTimer`] trait.
 ///
 /// The timer is set to 16-bit mode, using a 62.5kHz clock (16 µs ticks).
+/// The primary cycle takes 6ms.
 ///
 /// Uses CC0 for the primary cycle and CC1 for the secondary alarm. Uses the
 /// CC0_CLEAR shortcut to implement the primary cycle.
 ///
-/// The initialise_cycle() implementation assumes the timer is in the state it
-/// would have after system reset.
-///
-/// check_primary() and check_secondary() take care of clearing the timer's
-/// event registers.
-impl DisplayTimer for MicrobitTimer <'_> {
+/// [`DisplayTimer`]: tiny_led_matrix::DisplayTimer
+pub struct MicrobitDisplayTimer<T: Nrf51Timer>(HiResTimer<T, u16>);
 
+impl<T: As16BitTimer> MicrobitDisplayTimer<T> {
+    /// Returns a new `MicrobitDisplayTimer` wrapping the passed TIMER.
+    ///
+    /// Takes ownership of the TIMER peripheral.
+    pub fn new(timer: T) -> MicrobitDisplayTimer<T> {
+        MicrobitDisplayTimer(timer.as_16bit_timer())
+    }
+
+    /// Gives the underlying `nrf51::TIMER`*n* instance back.
+    pub fn free(self) -> T {
+        self.0.free()
+    }
+}
+
+impl<T: Nrf51Timer> DisplayTimer for MicrobitDisplayTimer<T> {
     fn initialise_cycle(&mut self, ticks: u16) {
-        let timer = &self.0;
-        timer.prescaler.write(|w| unsafe { w.bits(8) });
-        timer.cc[0].write(|w| unsafe { w.bits(ticks as u32) });
-        timer.bitmode.write(|w| w.bitmode()._16bit());
-        timer.shorts.write(|w| w.compare0_clear().enabled());
-        timer.intenset.write(|w| w.compare0().set());
-        timer.tasks_start.write(|w| unsafe { w.bits(1) });
+        self.0.set_frequency(TimerFrequency::Freq62500Hz);
+        self.0.set_compare_register(TimerCc::CC0, ticks);
+        self.0.enable_auto_clear(TimerCc::CC0);
+        self.0.enable_compare_interrupt(TimerCc::CC0);
+        self.0.start();
     }
 
     fn enable_secondary(&mut self) {
-        self.0.intenset.write(|w| w.compare1().set());
+        self.0.enable_compare_interrupt(TimerCc::CC1);
     }
 
     fn disable_secondary(&mut self) {
-        self.0.intenclr.write(|w| w.compare1().clear());
+        self.0.disable_compare_interrupt(TimerCc::CC1);
     }
 
     fn program_secondary(&mut self, ticks: u16) {
-        self.0.cc[1].write(|w| unsafe { w.bits(ticks as u32) });
+        self.0.set_compare_register(TimerCc::CC1, ticks);
     }
 
     fn check_primary(&mut self) -> bool {
-        check_cc(&self.0, 0)
+        self.0.poll_compare_event(TimerCc::CC0)
     }
 
     fn check_secondary(&mut self) -> bool {
-        check_cc(&self.0, 1)
+        self.0.poll_compare_event(TimerCc::CC1)
     }
-
 }
-

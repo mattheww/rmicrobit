@@ -96,9 +96,6 @@
 //! The timer is set to 16-bit mode, using a 62.5kHz clock (16 µs ticks). It
 //! resets every 375 ticks.
 //!
-//! The display code uses the CC0 and CC1 capture/compare registers. You are
-//! free to use CC2 and CC3.
-//!
 //! # Fonts
 //!
 //! The [`font`] module provides 5×5 representations of the ascii printable
@@ -123,7 +120,9 @@
 //! `TIMER2`).
 //!
 //! When your program starts:
-//! * call [`initialise_display()`], passing it the timer you chose and and
+//! * create a [`MicrobitDisplayTimer`] struct, passing the timer you chose to
+//! [`MicrobitDisplayTimer::new()`]
+//! * call [`initialise_display()`], passing it the `MicrobitDisplayTimer` and
 //! the gpio peripheral
 //! * create a [`Display`] struct (a `Display<MicrobitFrame>`).
 //!
@@ -175,42 +174,37 @@ pub mod scrolling;
 pub mod scrolling_text;
 
 pub use microbit_matrix::MicrobitFrame;
+pub use microbit_timer::MicrobitDisplayTimer;
 
 pub mod doc_example;
 
 
-use core::ops::Deref;
-use microbit::hal::nrf51;
+use microbit::hal::hi_res_timer::Nrf51Timer;
 use microbit_control::MicrobitGpio;
-use microbit_timer::MicrobitTimer;
 
 /// Initialises the micro:bit hardware to use the display driver.
 ///
-/// You can use `nrf51::TIMER0`, `nrf51::TIMER1`, or `nrf51::TIMER2` for the
-/// timer parameter.
-///
-/// Assumes the timer and the GPIO port are in the state they would have after
-/// system reset.
+/// Assumes the GPIO port is in the state it would have after system reset.
 ///
 /// # Example
 ///
 /// ```ignore
 /// let mut p: nrf51::Peripherals = _;
-/// microbit_blinkenlights::initialise_display(&mut p.TIMER1, &mut p.GPIO);
+/// let mut timer = microbit_blinkenlights::MicrobitDisplayTimer::new(p.TIMER1);
+/// microbit_blinkenlights::initialise_display(&mut timer, &mut p.GPIO);
 /// ```
-pub fn initialise_display<T>(
-    timer: &mut T,
-    gpio: &mut microbit::hal::nrf51::GPIO)
-    where T: Deref <Target = nrf51::timer0::RegisterBlock> {
+pub fn initialise_display<T: Nrf51Timer>(
+    timer: &mut MicrobitDisplayTimer<T>,
+    gpio: &mut microbit::hal::nrf51::GPIO,
+) {
     tiny_led_matrix::initialise_control(&mut MicrobitGpio(gpio));
-    tiny_led_matrix::initialise_timer(&mut MicrobitTimer(timer));
+    tiny_led_matrix::initialise_timer(timer);
 }
 
 /// Updates the LEDs and timer state during a timer interrupt.
 ///
-/// You can use `nrf51::TIMER0`, `nrf51::TIMER1`, or `nrf51::TIMER2` for the
-/// timer parameter (it must be the same timer you used for
-/// [`initialise_display()`]).
+/// The timer parameter must be the same [`MicrobitDisplayTimer`] you used for
+/// [`initialise_display()`].
 ///
 /// Call this in an interrupt handler for the timer you're using.
 ///
@@ -223,23 +217,19 @@ pub fn initialise_display<T>(
 /// In the style of `cortex-m-rtfm` v0.4:
 ///
 /// ```ignore
-/// #[interrupt(priority = 2, resources = [TIMER1, GPIO, DISPLAY])]
+/// #[interrupt(priority = 2, resources = [DISPLAY_TIMER, GPIO, DISPLAY])]
 /// fn TIMER1() {
 ///     microbit_blinkenlights::handle_display_event(
 ///         &mut resources.DISPLAY,
-///         resources.TIMER1,
+///         resources.DISPLAY_TIMER,
 ///         resources.GPIO,
 ///     );
 /// }
 /// ```
-pub fn handle_display_event<T>(
+pub fn handle_display_event<T: Nrf51Timer>(
     display: &mut Display<MicrobitFrame>,
-    timer: &mut T,
-    gpio: &mut microbit::hal::nrf51::GPIO)
-    where T: Deref <Target = nrf51::timer0::RegisterBlock> {
-    display.handle_event(
-        &mut MicrobitTimer(timer),
-        &mut MicrobitGpio(gpio),
-    );
+    timer: &mut MicrobitDisplayTimer<T>,
+    gpio: &mut microbit::hal::nrf51::GPIO,
+) {
+    display.handle_event(timer, &mut MicrobitGpio(gpio));
 }
-

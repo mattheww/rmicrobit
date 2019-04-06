@@ -4,8 +4,9 @@
 extern crate panic_semihosting;
 
 use rtfm::app;
+use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
 use microbit::hal::nrf51;
-use microbit_blinkenlights::{self, Display, Frame, MicrobitFrame};
+use microbit_blinkenlights::{self, Display, Frame, MicrobitDisplayTimer, MicrobitFrame};
 use microbit_blinkenlights::image::GreyscaleImage;
 
 fn heart_image(inner_brightness: u8) -> GreyscaleImage {
@@ -23,8 +24,8 @@ fn heart_image(inner_brightness: u8) -> GreyscaleImage {
 const APP: () = {
 
     static mut GPIO: nrf51::GPIO = ();
-    static mut TIMER1: nrf51::TIMER1 = ();
-    static mut RTC0: nrf51::RTC0 = ();
+    static mut DISPLAY_TIMER: MicrobitDisplayTimer<nrf51::TIMER1> = ();
+    static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
     static mut DISPLAY: Display<MicrobitFrame> = ();
 
     #[init]
@@ -34,42 +35,43 @@ const APP: () = {
         // Starting the low-frequency clock (needed for RTC to work)
         p.CLOCK.tasks_lfclkstart.write(|w| unsafe { w.bits(1) });
         while p.CLOCK.events_lfclkstarted.read().bits() == 0 {}
-        p.CLOCK.events_lfclkstarted.write(|w| unsafe { w.bits(0) });
+        p.CLOCK.events_lfclkstarted.reset();
 
+        let mut rtc0 = LoResTimer::new(p.RTC0);
         // 16Hz; 62.5ms period
-        p.RTC0.prescaler.write(|w| unsafe {w.bits(2047)});
-        p.RTC0.evtenset.write(|w| w.tick().set_bit());
-        p.RTC0.intenset.write(|w| w.tick().set_bit());
-        p.RTC0.tasks_start.write(|w| unsafe { w.bits(1) });
+        rtc0.set_frequency(FREQ_16HZ);
+        rtc0.enable_tick_event();
+        rtc0.enable_tick_interrupt();
+        rtc0.start();
 
-        microbit_blinkenlights::initialise_display(&mut p.TIMER1, &mut p.GPIO);
+        let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
+        microbit_blinkenlights::initialise_display(&mut timer, &mut p.GPIO);
 
         init::LateResources {
             GPIO : p.GPIO,
-            TIMER1 : p.TIMER1,
-            RTC0 : p.RTC0,
+            DISPLAY_TIMER : timer,
+            ANIM_TIMER : rtc0,
             DISPLAY : Display::new(),
         }
     }
 
     #[interrupt(priority = 2,
-                resources = [TIMER1, GPIO, DISPLAY])]
+                resources = [DISPLAY_TIMER, GPIO, DISPLAY])]
     fn TIMER1() {
         microbit_blinkenlights::handle_display_event(
             &mut resources.DISPLAY,
-            resources.TIMER1,
+            resources.DISPLAY_TIMER,
             resources.GPIO,
         );
     }
 
     #[interrupt(priority = 1,
-                resources = [RTC0, DISPLAY])]
+                resources = [ANIM_TIMER, DISPLAY])]
     fn RTC0() {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
         static mut STEP: u8 = 0;
 
-        let event_reg = &resources.RTC0.events_tick;
-        event_reg.write(|w| unsafe {w.bits(0)} );
+        &resources.ANIM_TIMER.clear_tick_event();
 
         let inner_brightness = match *STEP {
             0..=8 => 9-*STEP,
