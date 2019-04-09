@@ -5,7 +5,8 @@ extern crate panic_semihosting;
 
 use rtfm::app;
 use microbit::hal::nrf51;
-use microbit_blinkenlights::{self, Display, Frame, MicrobitDisplayTimer, MicrobitFrame};
+use microbit_blinkenlights::prelude::*;
+use microbit_blinkenlights::{self, Display, MicrobitDisplayTimer, MicrobitFrame};
 use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
 
 mod animation;

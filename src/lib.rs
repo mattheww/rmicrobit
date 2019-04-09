@@ -116,6 +116,8 @@
 //!
 //! # Usage
 //!
+//! `use microbit_blinkenlights::prelude::*` to make trait methods available.
+//!
 //! Choose a timer to drive the display from (`TIMER0`, `TIMER1`, or
 //! `TIMER2`).
 //!
@@ -131,8 +133,7 @@
 //!
 //! To change what's displayed: create a [`MicrobitFrame`] instance, use
 //! [`.set()`](`Frame::set()`) to put an image (something implementing
-//! [`Render`]) in it, then call [`Display::set_frame()`]. Note you'll have to
-//! `use microbit_blinkenlights::Frame` to make `set()` available.
+//! [`Render`]) in it, then call [`Display::set_frame()`].
 //!
 //! You can call `set_frame()` at any time, so long as you're not
 //! interrupting, or interruptable by, `handle_display_event()`.
@@ -170,6 +171,7 @@ mod microbit_timer;
 
 pub mod font;
 pub mod image;
+pub mod prelude;
 pub mod scrolling;
 pub mod scrolling_text;
 
