@@ -6,20 +6,39 @@
 
 use microbit::hal::nrf51;
 use tiny_led_matrix::DisplayControl;
+use pin_constants::*;
 
-const fn bit_range(lo: usize, count: usize) -> u32 {
-    return ((1<<count) - 1) << lo
+
+/// Constants identifying GPIO pins used in the LED matrix.
+///
+/// This module is intended to be suitable for glob-importing:
+/// ```
+/// pub use microbit_blinkenlights::pin_constants::*
+/// ```
+pub mod pin_constants {
+    const fn bit_range(lo: usize, count: usize) -> u32 {
+        ((1<<count) - 1) << lo
+    }
+
+    /// The number of column pins (9).
+    pub const MATRIX_COLS : usize = 9;
+
+    /// Number in the GPIO port of the first column pin
+    pub const FIRST_COL_PIN : usize = 4;
+    /// Number in the GPIO port of the last column pin
+    pub const LAST_COL_PIN : usize = FIRST_COL_PIN + MATRIX_COLS - 1;
+    /// u32 bitmask representing the GPIO port numbers of the column pins
+    pub const COL_PINS_MASK : u32 = bit_range(FIRST_COL_PIN, MATRIX_COLS);
+
+    /// The number of row pins (3).
+    pub const MATRIX_ROWS : usize = 3;
+    /// Number in the GPIO port of the first row pin
+    pub const FIRST_ROW_PIN : usize = 13;
+    /// Number in the GPIO port of the last row pin
+    pub const LAST_ROW_PIN : usize = FIRST_ROW_PIN + MATRIX_ROWS - 1;
+    /// u32 bitmask representing the GPIO port numbers of the row pins
+    pub const ROW_PINS_MASK : u32 = bit_range(FIRST_ROW_PIN, MATRIX_ROWS);
 }
-
-pub(crate) const MATRIX_COLS : usize = 9;
-const FIRST_COL_PIN : usize = 4;
-const LAST_COL_PIN : usize = FIRST_COL_PIN + MATRIX_COLS - 1;
-const COL_PINS_MASK : u32 = bit_range(FIRST_COL_PIN, MATRIX_COLS);
-
-pub(crate) const MATRIX_ROWS : usize = 3;
-const FIRST_ROW_PIN : usize = 13;
-const LAST_ROW_PIN : usize = FIRST_ROW_PIN + MATRIX_ROWS - 1;
-const ROW_PINS_MASK : u32 = bit_range(FIRST_ROW_PIN, MATRIX_ROWS);
 
 
 /// Wrapper for `nrf51::GPIO` for passing to the display code.

@@ -7,7 +7,7 @@
 //! [`Frame`]: tiny_led_matrix::Frame
 
 use tiny_led_matrix::{Frame, Matrix, RowPlan};
-use crate::microbit_control::{{MATRIX_COLS, MATRIX_ROWS}};
+use crate::microbit_control::pin_constants::{MATRIX_COLS, MATRIX_ROWS};
 
 /// Implementation of [`Matrix`] for the microbit's LED display.
 ///

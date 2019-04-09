@@ -175,6 +175,7 @@ pub mod prelude;
 pub mod scrolling;
 pub mod scrolling_text;
 
+pub use microbit_control::pin_constants;
 pub use microbit_matrix::MicrobitFrame;
 pub use microbit_timer::MicrobitDisplayTimer;
 
