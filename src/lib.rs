@@ -170,6 +170,7 @@ mod microbit_matrix;
 mod microbit_timer;
 
 pub mod font;
+pub mod gpio;
 pub mod image;
 pub mod prelude;
 pub mod scrolling;

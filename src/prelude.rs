@@ -8,9 +8,22 @@
 //! It exports some of this crate's traits under 'safe' names, so that their
 //! methods become available without otherwise polluting the global namespace.
 //!
-//! In particular, the `pub use` above makes `frame.set()` work.
+//! The `pub use` above provides:
+//!
+//! Trait                   | Example |
+//! ----------------------- | ------- |
+//! [`Frame`]               | `frame.set()` |
+//! [`MicrobitGpioExt`]     | `GPIO.split_by_kind()` |
+//!
+//! [`MicrobitGpioExt`]: crate::gpio::MicrobitGpioExt
+//! [`Frame`]: tiny_led_matrix::Frame
+
+// I'm hiding these from rustdoc to prevent it choosing some of them as the
+// main page for the traits (eg for Frame). It seems least misleading to hide
+// all of them.
 
 #[doc(hidden)]
-// Hidden from docs to prevent rustdoc choosing this as the main page
-// for Frame.
 pub use tiny_led_matrix::Frame as _tiny_led_matrix_frame;
+
+#[doc(hidden)]
+pub use crate::gpio::MicrobitGpioExt as _mb_gpio_microbit_gpio_ext;
