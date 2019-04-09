@@ -122,10 +122,12 @@
 //! `TIMER2`).
 //!
 //! When your program starts:
+//! * use [`GPIO.split_by_kind()`] to get a [`DisplayPins`] struct, and
+//! create a [`DisplayPort`] by passing that to [`DisplayPort::new()`]
 //! * create a [`MicrobitDisplayTimer`] struct, passing the timer you chose to
 //! [`MicrobitDisplayTimer::new()`]
 //! * call [`initialise_display()`], passing it the `MicrobitDisplayTimer` and
-//! the gpio peripheral
+//! the `DisplayPort`.
 //! * create a [`Display`] struct (a `Display<MicrobitFrame>`).
 //!
 //! In an interrupt handler for the same timer, call
@@ -150,6 +152,8 @@
 //! [`Animate`]: scrolling::Animate
 //! [`BitImage`]: image::BitImage
 //! [`DisplayTimer`]: tiny_led_matrix::DisplayTimer
+//! [`DisplayPins`]: gpio::DisplayPins
+//! [`GPIO.split_by_kind()`]: gpio::MicrobitGpioExt::split_by_kind
 //! [`GreyscaleImage`]: image::GreyscaleImage
 //! [`Scrollable`]: scrolling::Scrollable
 //! [`ScrollingImages`]: scrolling::ScrollingImages
@@ -176,7 +180,7 @@ pub mod prelude;
 pub mod scrolling;
 pub mod scrolling_text;
 
-pub use microbit_control::pin_constants;
+pub use microbit_control::{pin_constants, DisplayPort};
 pub use microbit_matrix::MicrobitFrame;
 pub use microbit_timer::MicrobitDisplayTimer;
 
@@ -184,11 +188,8 @@ pub mod doc_example;
 
 
 use microbit::hal::hi_res_timer::Nrf51Timer;
-use microbit_control::MicrobitGpio;
 
 /// Initialises the micro:bit hardware to use the display driver.
-///
-/// Assumes the GPIO port is in the state it would have after system reset.
 ///
 /// # Example
 ///
@@ -199,9 +200,9 @@ use microbit_control::MicrobitGpio;
 /// ```
 pub fn initialise_display<T: Nrf51Timer>(
     timer: &mut MicrobitDisplayTimer<T>,
-    gpio: &mut microbit::hal::nrf51::GPIO,
+    display_port: &mut DisplayPort,
 ) {
-    tiny_led_matrix::initialise_control(&mut MicrobitGpio(gpio));
+    tiny_led_matrix::initialise_control(display_port);
     tiny_led_matrix::initialise_timer(timer);
 }
 
@@ -233,7 +234,7 @@ pub fn initialise_display<T: Nrf51Timer>(
 pub fn handle_display_event<T: Nrf51Timer>(
     display: &mut Display<MicrobitFrame>,
     timer: &mut MicrobitDisplayTimer<T>,
-    gpio: &mut microbit::hal::nrf51::GPIO,
+    display_port: &mut DisplayPort,
 ) {
-    display.handle_event(timer, &mut MicrobitGpio(gpio));
+    display.handle_event(timer, display_port);
 }

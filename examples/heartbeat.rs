@@ -7,7 +7,8 @@ use rtfm::app;
 use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
 use microbit::hal::nrf51;
 use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::{self, Display, MicrobitDisplayTimer, MicrobitFrame};
+use microbit_blinkenlights::{self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame};
+use microbit_blinkenlights::gpio::PinsByKind;
 use microbit_blinkenlights::image::GreyscaleImage;
 
 fn heart_image(inner_brightness: u8) -> GreyscaleImage {
@@ -24,14 +25,14 @@ fn heart_image(inner_brightness: u8) -> GreyscaleImage {
 #[app(device = microbit::hal::nrf51)]
 const APP: () = {
 
-    static mut GPIO: nrf51::GPIO = ();
+    static mut DISPLAY_PORT: DisplayPort = ();
     static mut DISPLAY_TIMER: MicrobitDisplayTimer<nrf51::TIMER1> = ();
     static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
     static mut DISPLAY: Display<MicrobitFrame> = ();
 
     #[init]
     fn init() -> init::LateResources {
-        let mut p: nrf51::Peripherals = device;
+        let p: nrf51::Peripherals = device;
 
         // Starting the low-frequency clock (needed for RTC to work)
         p.CLOCK.tasks_lfclkstart.write(|w| unsafe { w.bits(1) });
@@ -45,11 +46,14 @@ const APP: () = {
         rtc0.enable_tick_interrupt();
         rtc0.start();
 
+        let PinsByKind {display_pins, ..} = p.GPIO.split_by_kind();
+        let mut display_port = DisplayPort::new(display_pins);
+
         let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
-        microbit_blinkenlights::initialise_display(&mut timer, &mut p.GPIO);
+        microbit_blinkenlights::initialise_display(&mut timer, &mut display_port);
 
         init::LateResources {
-            GPIO : p.GPIO,
+            DISPLAY_PORT : display_port,
             DISPLAY_TIMER : timer,
             ANIM_TIMER : rtc0,
             DISPLAY : Display::new(),
@@ -57,12 +61,12 @@ const APP: () = {
     }
 
     #[interrupt(priority = 2,
-                resources = [DISPLAY_TIMER, GPIO, DISPLAY])]
+                resources = [DISPLAY_TIMER, DISPLAY_PORT, DISPLAY])]
     fn TIMER1() {
         microbit_blinkenlights::handle_display_event(
             &mut resources.DISPLAY,
             resources.DISPLAY_TIMER,
-            resources.GPIO,
+            resources.DISPLAY_PORT,
         );
     }
 
