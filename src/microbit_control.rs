@@ -90,6 +90,8 @@ pub mod pin_constants {
 /// // (sleep a short time here)
 /// ```
 ///
+/// A runnable example is available as `examples/use_display_port.rs`.
+///
 /// [`Display`]: tiny_led_matrix::Display
 /// [`DisplayControl`]: tiny_led_matrix::DisplayControl
 /// [DAL documentation]: https://lancaster-university.github.io/microbit-docs/ubit/display/
