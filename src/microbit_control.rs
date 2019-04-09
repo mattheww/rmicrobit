@@ -14,12 +14,12 @@ const fn bit_range(lo: usize, count: usize) -> u32 {
 pub(crate) const MATRIX_COLS : usize = 9;
 const FIRST_COL_PIN : usize = 4;
 const LAST_COL_PIN : usize = FIRST_COL_PIN + MATRIX_COLS - 1;
-const COL_BITS : u32 = bit_range(FIRST_COL_PIN, MATRIX_COLS);
+const COL_PINS_MASK : u32 = bit_range(FIRST_COL_PIN, MATRIX_COLS);
 
 pub(crate) const MATRIX_ROWS : usize = 3;
 const FIRST_ROW_PIN : usize = 13;
 const LAST_ROW_PIN : usize = FIRST_ROW_PIN + MATRIX_ROWS - 1;
-const ROW_BITS : u32 = bit_range(FIRST_ROW_PIN, MATRIX_ROWS);
+const ROW_PINS_MASK : u32 = bit_range(FIRST_ROW_PIN, MATRIX_ROWS);
 
 
 /// Wrapper for `nrf51::GPIO` for passing to the display code.
@@ -64,9 +64,9 @@ impl DisplayControl for MicrobitGpio <'_> {
         let gpio = &self.0;
         // To light an LED, we set the row bit and clear the col bit.
         let rows_to_set = 1<<(FIRST_ROW_PIN+row);
-        let rows_to_clear = ROW_BITS ^ rows_to_set;
+        let rows_to_clear = ROW_PINS_MASK ^ rows_to_set;
         let cols_to_clear = column_pins(cols);
-        let cols_to_set = COL_BITS ^ cols_to_clear;
+        let cols_to_set = COL_PINS_MASK ^ cols_to_clear;
 
         gpio.outset.write(|w| unsafe { w.bits(rows_to_set | cols_to_set) });
         gpio.outclr.write(|w| unsafe { w.bits(rows_to_clear | cols_to_clear) });
