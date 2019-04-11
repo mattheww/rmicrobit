@@ -12,10 +12,8 @@ use pin_constants::*;
 
 /// Constants identifying GPIO pins used in the LED matrix.
 ///
-/// This module is intended to be suitable for glob-importing:
-/// ```
-/// pub use microbit_blinkenlights::pin_constants::*
-/// ```
+/// These constants and convenience functions may be used when working
+/// directly with a [`DisplayPort`].
 pub mod pin_constants {
     const fn bit_range(lo: usize, count: usize) -> u32 {
         ((1<<count) - 1) << lo
@@ -39,6 +37,20 @@ pub mod pin_constants {
     pub const LAST_ROW_PIN : usize = FIRST_ROW_PIN + MATRIX_ROWS - 1;
     /// u32 bitmask representing the GPIO port numbers of the row pins
     pub const ROW_PINS_MASK : u32 = bit_range(FIRST_ROW_PIN, MATRIX_ROWS);
+
+    /// Returns the number in the GPIO port of the specified matrix column pin.
+    ///
+    /// `col` should be in 0..9 .
+    pub const fn col_pin_number(col: usize) -> u32 {
+        (FIRST_COL_PIN + col) as u32
+    }
+
+    /// Returns the number in the GPIO port of the specified matrix row pin.
+    ///
+    /// `row` should be in 0..3 .
+    pub const fn row_pin_number(row: usize) -> u32 {
+        (FIRST_ROW_PIN + row) as u32
+    }
 }
 
 
@@ -63,17 +75,17 @@ pub mod pin_constants {
 /// ```
 /// use microbit_blinkenlights::prelude::*;
 /// use microbit_blinkenlights::gpio::PinsByKind;
-/// use microbit_blinkenlights::pin_constants::*;
+/// use microbit_blinkenlights::pin_constants::{col_pin_number, row_pin_number, COL_PINS_MASK};
 /// let p: nrf51::Peripherals = _;
 /// let PinsByKind {display_pins, ..} = p.GPIO.split_by_kind();
 /// let mut display_port = DisplayPort::new(display_pins);
 /// // Row whose third column is the top-right led
-/// const UPPER_RIGHT_ROW : usize = FIRST_ROW_PIN;
+/// const UPPER_RIGHT_ROW : u32 = row_pin_number(0);
 /// // Row whose third column is the bottom-left led
-/// const LOWER_LEFT_ROW : usize = FIRST_ROW_PIN+2;
+/// const LOWER_LEFT_ROW : u32 = row_pin_number(2);
 ///
 /// // Set all cols except the third high
-/// display_port.set(COL_PINS_MASK ^ 1<<(FIRST_COL_PIN+2));
+/// display_port.set(COL_PINS_MASK ^ 1<<col_pin_number(2));
 ///
 /// // Light the top-right LED
 /// display_port.set(1<<UPPER_RIGHT_ROW);
