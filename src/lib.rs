@@ -169,7 +169,7 @@ pub use tiny_led_matrix::{
     Frame,
 };
 
-mod microbit_control;
+mod display_port;
 mod microbit_matrix;
 mod microbit_timer;
 
@@ -180,7 +180,7 @@ pub mod prelude;
 pub mod scrolling;
 pub mod scrolling_text;
 
-pub use microbit_control::{pin_constants, DisplayPort};
+pub use display_port::{pin_constants, DisplayPort};
 pub use microbit_matrix::MicrobitFrame;
 pub use microbit_timer::MicrobitDisplayTimer;
 
