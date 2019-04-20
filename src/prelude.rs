@@ -14,8 +14,10 @@
 //! ----------------------- | ------- |
 //! [`Frame`]               | `frame.set()` |
 //! [`MicrobitGpioExt`]     | `GPIO.split_by_kind()` |
+//! [`PollButton`]          | `button_a.poll_event()` |
 //!
 //! [`MicrobitGpioExt`]: crate::gpio::MicrobitGpioExt
+//! [`PollButton`]: crate::buttons::core::PollButton
 //! [`Frame`]: tiny_led_matrix::Frame
 
 // I'm hiding these from rustdoc to prevent it choosing some of them as the
@@ -27,3 +29,6 @@ pub use tiny_led_matrix::Frame as _tiny_led_matrix_frame;
 
 #[doc(hidden)]
 pub use crate::gpio::MicrobitGpioExt as _mb_gpio_microbit_gpio_ext;
+
+#[doc(hidden)]
+pub use crate::buttons::core::PollButton as _mb_buttons_core_poll_button;

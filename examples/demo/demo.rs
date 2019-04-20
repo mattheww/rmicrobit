@@ -2,6 +2,7 @@ use numtoa::NumToA;
 
 use microbit_blinkenlights::{Render, MAX_BRIGHTNESS, font};
 use microbit_blinkenlights::image::{GreyscaleImage, BitImage};
+use microbit_blinkenlights::buttons::dual_with_hold::ButtonEvent;
 
 use crate::animation::{
     Animator, RefAnimator,
@@ -124,9 +125,10 @@ enum Scene {
     Font,
 }
 
-const SCENE_COUNT: usize = 12;
+const MAIN_SCENE_COUNT: usize = 12;
+const OVERRIDE_SCENE_COUNT: usize = 4;
 
-const SCENES: [Scene; SCENE_COUNT] = [
+const MAIN_SCENES: [Scene; MAIN_SCENE_COUNT] = [
     Scene::Static {image: &HEART},
     Scene::Static {image: &GREY_HEART},
     Scene::Static {image: &SCALE},
@@ -155,12 +157,32 @@ const SCENES: [Scene; SCENE_COUNT] = [
     Scene::Font,
 ];
 
+const OVERRIDE_SCENES: [Scene; OVERRIDE_SCENE_COUNT] = [
+    Scene::ScrollText {
+        message: b"Clicked both",
+        slowdown: 1
+    },
+    Scene::ScrollText {
+        message: b"Held A",
+        slowdown: 1
+    },
+    Scene::ScrollText {
+        message: b"Held B",
+        slowdown: 1
+    },
+    Scene::ScrollText {
+        message: b"Held both",
+        slowdown: 1
+    },
+];
+
 pub fn initial_frame() -> &'static impl Render {
     &HEART
 }
 
 pub struct Demo {
     scene_index: usize,
+    override_scene_index: Option<usize>,
     animator: FunctionalAnimator,
     si_animator: ScrollingImageAnimator,
     sst_animator: ScrollingStaticTextAnimator,
@@ -172,7 +194,8 @@ pub struct Demo {
 impl Demo {
 
     pub fn new() -> Demo {
-        Demo{scene_index:0,
+        Demo{scene_index: 0,
+             override_scene_index: None,
              animator: Default::default(),
              si_animator: Default::default(),
              sst_animator: Default::default(),
@@ -183,7 +206,11 @@ impl Demo {
     }
 
     fn current_scene(&self) -> &'static Scene {
-        &SCENES[self.scene_index]
+        if let Some(index) = self.override_scene_index {
+            &OVERRIDE_SCENES[index]
+        } else {
+            &MAIN_SCENES[self.scene_index]
+        }
     }
 
     fn set_counter(&mut self, value: usize) {
@@ -195,9 +222,7 @@ impl Demo {
             slowdown);
     }
 
-    pub fn next_state(&mut self) {
-        self.scene_index += 1;
-        if self.scene_index == SCENE_COUNT {self.scene_index = 0}
+    fn reset_current_state(&mut self) {
         match *self.current_scene() {
             Scene::Animation {animation} => {
                 self.animator.reset(animation);
@@ -218,7 +243,17 @@ impl Demo {
         }
     }
 
-    pub fn next_state_or_modify_current_state(&mut self) {
+    fn next_state(&mut self) {
+        if self.override_scene_index.is_some() {
+            self.override_scene_index = None;
+        } else {
+            self.scene_index += 1;
+            if self.scene_index == MAIN_SCENE_COUNT {self.scene_index = 0}
+        }
+        self.reset_current_state();
+    }
+
+    fn next_state_or_modify_current_state(&mut self) {
         match *self.current_scene() {
             Scene::Counter => {
                 self.set_counter(self.counter_index+1);
@@ -233,6 +268,34 @@ impl Demo {
                 self.next_state();
             }
         };
+    }
+
+    pub fn show_override_scene(&mut self, number: usize) {
+        self.override_scene_index = Some(number);
+        self.reset_current_state();
+    }
+
+    pub fn handle_button_event(&mut self, event: ButtonEvent) {
+        match event {
+            ButtonEvent::ClickA => {
+                self.next_state();
+            }
+            ButtonEvent::ClickB => {
+                self.next_state_or_modify_current_state();
+            }
+            ButtonEvent::ClickAB => {
+                self.show_override_scene(0);
+            }
+            ButtonEvent::HoldA => {
+                self.show_override_scene(1);
+            }
+            ButtonEvent::HoldB => {
+                self.show_override_scene(2);
+            }
+            ButtonEvent::HoldAB => {
+                self.show_override_scene(3);
+            }
+        }
     }
 
     pub fn is_static(&self) -> bool {

@@ -174,6 +174,7 @@ mod display_port;
 mod microbit_matrix;
 mod microbit_timer;
 
+pub mod buttons;
 pub mod font;
 pub mod gpio;
 pub mod image;

@@ -9,9 +9,10 @@ use microbit_blinkenlights::prelude::*;
 use microbit_blinkenlights::{self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame};
 use microbit_blinkenlights::gpio::PinsByKind;
 use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
+use microbit_blinkenlights::buttons;
+use microbit_blinkenlights::buttons::dual_with_hold::ABMonitor;
 
 mod animation;
-mod buttons;
 mod demo;
 
 
@@ -19,12 +20,10 @@ mod demo;
 const APP: () = {
 
     static mut DISPLAY_PORT: DisplayPort = ();
-    static mut GPIOTE: nrf51::GPIOTE = ();
     static mut DISPLAY_TIMER: MicrobitDisplayTimer<nrf51::TIMER1> = ();
-
-    static mut TIMER2: nrf51::TIMER2 = ();
     static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
     static mut DISPLAY: Display<MicrobitFrame> = ();
+    static mut BUTTON_MONITOR: ABMonitor = ();
     static mut DEMO: demo::Demo = ();
 
     #[init]
@@ -33,13 +32,12 @@ const APP: () = {
         let _core: rtfm::Peripherals = core;
 
         // nrf51 peripherals
-        let mut p: nrf51::Peripherals = device;
+        let p: nrf51::Peripherals = device;
 
-        buttons::initialise_pins(&mut p);
-
-        let PinsByKind {display_pins, ..} = p.GPIO.split_by_kind();
+        let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
         let mut display_port = DisplayPort::new(display_pins);
-
+        let (button_a, button_b) = buttons::from_pins(button_pins);
+        let button_monitor = ABMonitor::new(button_a, button_b);
         let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
         microbit_blinkenlights::initialise_display(&mut timer, &mut display_port);
 
@@ -57,9 +55,7 @@ const APP: () = {
 
         init::LateResources {
             DISPLAY_PORT : display_port,
-            GPIOTE : p.GPIOTE,
             DISPLAY_TIMER : timer,
-            TIMER2 : p.TIMER2,
             ANIM_TIMER : rtc0,
             DEMO : demo::Demo::new(),
             DISPLAY : {
@@ -69,17 +65,37 @@ const APP: () = {
                 display.set_frame(&frame);
                 display
             },
+            BUTTON_MONITOR : button_monitor,
         }
     }
 
     #[interrupt(priority = 2,
+                spawn = [handle_buttons],
                 resources = [DISPLAY_TIMER, DISPLAY_PORT, DISPLAY])]
     fn TIMER1() {
-        microbit_blinkenlights::handle_display_event(
+        let display_event = microbit_blinkenlights::handle_display_event(
             &mut resources.DISPLAY,
             resources.DISPLAY_TIMER,
             resources.DISPLAY_PORT,
         );
+        if display_event.is_new_row() {
+            spawn.handle_buttons().ok();
+        }
+    }
+
+    #[task(priority = 1,
+           resources = [DISPLAY, BUTTON_MONITOR, DEMO])]
+    fn handle_buttons() {
+        static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
+        if let Some(event) = resources.BUTTON_MONITOR.poll() {
+            resources.DEMO.handle_button_event(event);
+            if resources.DEMO.is_static() {
+                FRAME.set(resources.DEMO.current_image());
+                resources.DISPLAY.lock(|display| {
+                    display.set_frame(FRAME);
+                });
+            }
+        }
     }
 
     #[interrupt(priority = 1,
@@ -100,35 +116,12 @@ const APP: () = {
         });
     }
 
-    #[interrupt(priority = 1,
-                resources = [GPIOTE, TIMER2, DISPLAY, DEMO])]
-    fn GPIOTE() {
-        static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
-
-        let a_pressed = buttons::a_pressed(
-            &mut resources.GPIOTE, &mut resources.TIMER2);
-        let b_pressed = buttons::b_pressed(
-            &mut resources.GPIOTE, &mut resources.TIMER2);
-
-        if a_pressed {
-            resources.DEMO.next_state();
-        } else if b_pressed {
-            resources.DEMO.next_state_or_modify_current_state();
-        }
-        if a_pressed || b_pressed {
-            if resources.DEMO.is_static() {
-                FRAME.set(resources.DEMO.current_image());
-                resources.DISPLAY.lock(|display| {
-                    display.set_frame(FRAME);
-                });
-            }
-        }
-    }
-
-    #[interrupt(priority = 1, resources = [GPIOTE, TIMER2])]
-    fn TIMER2() {
-        buttons::handle_debounce_timer(
-            &mut resources.GPIOTE, &mut resources.TIMER2);
+    // Interrupt handlers used to dispatch software tasks
+    extern "C" {
+        fn SWI0();
+        fn SWI1();
+        fn SWI2();
+        fn SWI3();
     }
 
 };
