@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 
 //! A library for controlling the [micro:bit](https://microbit.org/) 5×5 LED
 //! display.
@@ -167,6 +167,7 @@ pub use tiny_led_matrix::{
     MAX_BRIGHTNESS,
     Display,
     Frame,
+    Event as DisplayEvent,
 };
 
 mod display_port;
@@ -217,6 +218,8 @@ pub fn initialise_display<T: Nrf51Timer>(
 ///
 /// See [`Display::handle_event()`] for details.
 ///
+/// Returns a [`DisplayEvent`].
+///
 /// # Example
 ///
 /// In the style of `cortex-m-rtfm` v0.4:
@@ -235,6 +238,6 @@ pub fn handle_display_event<T: Nrf51Timer>(
     display: &mut Display<MicrobitFrame>,
     timer: &mut MicrobitDisplayTimer<T>,
     display_port: &mut DisplayPort,
-) {
-    display.handle_event(timer, display_port);
+) -> DisplayEvent {
+    display.handle_event(timer, display_port)
 }
