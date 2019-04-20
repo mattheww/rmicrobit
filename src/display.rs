@@ -48,16 +48,17 @@
 //!
 //! The [`graphics`] module provides a number of implementations of `Render`.
 //!
-//! # Display
+//! # MicrobitDisplay
 //!
-//! A [`Display`] instance controls the LEDs and programs a timer. There
-//! should normally be a single `Display` instance in the program.
+//! A [`MicrobitDisplay`] instance controls the LEDs and programs a timer.
+//! There should normally be a single `MicrobitDisplay` instance in the
+//! program.
 //!
 //! # Frames
 //!
-//! Types implementing [`Render`] aren't used directly with the [`Display`];
-//! instead they're used to update a [`MicrobitFrame`] instance which is in
-//! turn passed to the `Display`.
+//! Types implementing [`Render`] aren't used directly with the
+//! [`MicrobitDisplay`]; instead they're used to update a [`MicrobitFrame`]
+//! instance which is in turn passed to the `Display`.
 //!
 //! A `MicrobitFrame` instance is a 'compiled' representation of a 5×5
 //! greyscale image, in a form that's more directly usable by the display
@@ -65,20 +66,25 @@
 //!
 //! This is exposed in the public API so that you can construct the
 //! `MicrobitFrame` representation in code running at a low priority. Then
-//! only [`Display::set_frame()`][set_frame] has to be called in code that
-//! can't be interrupted by the display timer.
+//! only [`MicrobitDisplay::set_frame()`][set_frame] has to be called in code
+//! that can't be interrupted by the display timer.
 //!
 //! # Timer integration
 //!
-//! The `Display` expects to control a single timer. It can use the
+//! The `MicrobitDisplay` owns a single timer peripheral. It can use the
 //! micro:bit's `TIMER0`, `TIMER1`, or `TIMER2`.
 //!
 //! It uses a 6ms period to light each of the three internal LED rows, so that
 //! the entire display is updated every 18ms.
 //!
-//! When rendering greyscale images, the `Display` requests extra interrupts
-//! within each 6ms period. It only requests interrupts for the greyscale
-//! levels which are actually required for what's currently being displayed.
+//! When rendering greyscale images, the `MicrobitDisplay` requests extra
+//! interrupts within each 6ms period. It only requests interrupts for the
+//! greyscale levels which are actually required for what's currently being
+//! displayed.
+//!
+//! The function called from the timer interrupt returns a value indicating
+//! which kind of interrupt has occurred, so that it's possible to rely on the
+//! same timer to perform other tasks every 6ms.
 //!
 //! ## Technical details
 //!
@@ -93,23 +99,21 @@
 //! `TIMER2`).
 //!
 //! When your program starts:
-//! * use [`GPIO.split_by_kind()`] to get a [`DisplayPins`] struct, and
-//! create a [`DisplayPort`] by passing that to [`DisplayPort::new()`]
-//! * create a [`MicrobitDisplayTimer`] struct, passing the timer you chose to
-//! [`MicrobitDisplayTimer::new()`]
-//! * call [`display::initialise()`], passing it the `MicrobitDisplayTimer` and
-//! the `DisplayPort`.
-//! * create a [`Display`] struct (a `Display<MicrobitFrame>`).
+//! * use [`GPIO.split_by_kind()`] to get a [`DisplayPins`] struct
+//! * create a [`DisplayPort`] by passing that to [`DisplayPort::new()`]
+//! * create a [`MicrobitDisplay`] by passing the `DisplayPort` and the
+//! timer you chose to [`MicrobitDisplay::new()`]
 //!
-//! In an interrupt handler for the same timer, call
-//! [`display::handle_event()`].
+//! In an interrupt handler for the same timer, call the `MicrobitDisplay`'s
+//! [`handle_event()`] method.
 //!
 //! To change what's displayed: create a [`MicrobitFrame`] instance, use
-//! [`.set()`](`display::Frame::set()`) to put an image (something implementing
-//! [`Render`]) in it, then call [`Display::set_frame()`][set_frame].
+//! [`.set()`](`display::Frame::set()`) to put an image (something
+//! implementing [`Render`]) in it, then call the `MicrobitDisplay`'s
+//! [`set_frame()`][set_frame] method.
 //!
 //! You can call `set_frame()` at any time, so long as you're not
-//! interrupting, or interruptable by, `display::handle_event()`.
+//! interrupting, or interruptable by, `handle_event()`.
 //!
 //! Once you've called `set_frame()`, you are free to reuse the
 //! `MicrobitFrame`.
@@ -119,15 +123,14 @@
 //! [dal]: https://lancaster-university.github.io/microbit-docs/
 //! [micropython]: https://microbit-micropython.readthedocs.io/
 //!
-//! [`DisplayTimer`]: tiny_led_matrix::DisplayTimer
 //! [`DisplayPins`]: crate::gpio::DisplayPins
 //! [`GPIO.split_by_kind()`]: crate::gpio::MicrobitGpioExt::split_by_kind
-//! [`Display`]: display::Display
 //! [`DisplayPort`]: display::DisplayPort
 //! [`DisplayPort::new()`]: display::DisplayPort::new
-//! [set_frame]: display::Display::set_frame
-//! [`MicrobitDisplayTimer`]: display::MicrobitDisplayTimer
-//! [`MicrobitDisplayTimer::new()`]: display::MicrobitDisplayTimer::new
+//! [`MicrobitDisplay`]: display::MicrobitDisplay
+//! [`MicrobitDisplay::new()`]: display::MicrobitDisplay::new
+//! [set_frame]: display::MicrobitDisplay::set_frame
+//! [`handle_event()`]: display::MicrobitDisplay::handle_event
 //! [`MicrobitFrame`]: display::MicrobitFrame
 //! [`Render`]: display::Render
 //! [`doc_example`]: display::doc_example
@@ -137,74 +140,17 @@
 pub use tiny_led_matrix::{
     Render,
     MAX_BRIGHTNESS,
-    Display,
     Frame,
     Event as DisplayEvent,
 };
 
 mod display_port;
+mod microbit_display;
 mod matrix;
 mod timer;
 
 pub mod doc_example;
 
-pub use matrix::MicrobitFrame;
-pub use timer::MicrobitDisplayTimer;
-
 pub use display_port::{pin_constants, DisplayPort};
-
-
-use microbit::hal::hi_res_timer::Nrf51Timer;
-
-/// Initialises the micro:bit hardware to use the display driver.
-///
-/// # Example
-///
-/// ```ignore
-/// use microbit_blinkenlights::display::{self, MicrobitDisplayTimer};
-/// let mut p: nrf51::Peripherals = _;
-/// let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
-/// display::initialise(&mut timer, &mut p.GPIO);
-/// ```
-pub fn initialise<T: Nrf51Timer>(
-    timer: &mut MicrobitDisplayTimer<T>,
-    display_port: &mut DisplayPort,
-) {
-    tiny_led_matrix::initialise_control(display_port);
-    tiny_led_matrix::initialise_timer(timer);
-}
-
-/// Updates the LEDs and timer state during a timer interrupt.
-///
-/// The timer parameter must be the same [`MicrobitDisplayTimer`] you used for
-/// [`initialise()`].
-///
-/// Call this in an interrupt handler for the timer you're using.
-///
-/// Takes care of clearing the timer's event registers.
-///
-/// See [`Display::handle_event()`] for details.
-///
-/// Returns a [`DisplayEvent`].
-///
-/// # Example
-///
-/// In the style of `cortex-m-rtfm` v0.4:
-///
-/// ```ignore
-/// #[interrupt(priority = 2, resources = [DISPLAY_TIMER, GPIO, DISPLAY])]
-/// fn TIMER1() {
-///     display::handle_event(
-///         &mut resources.DISPLAY,
-///         resources.DISPLAY_TIMER,
-///         resources.GPIO,
-///     );
-/// }
-/// ```
-pub fn handle_event<T: Nrf51Timer>(
-    display: &mut Display<MicrobitFrame>,
-    timer: &mut MicrobitDisplayTimer<T>,
-    display_port: &mut DisplayPort,
-) -> DisplayEvent {
-    display.handle_event(timer, display_port)
-}
+pub use matrix::MicrobitFrame;
+pub use microbit_display::MicrobitDisplay;

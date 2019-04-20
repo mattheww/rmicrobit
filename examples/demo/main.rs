@@ -6,7 +6,7 @@ extern crate panic_semihosting;
 use rtfm::app;
 use microbit::hal::nrf51;
 use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::display::{self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame};
+use microbit_blinkenlights::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
 use microbit_blinkenlights::gpio::PinsByKind;
 use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
 use microbit_blinkenlights::buttons;
@@ -19,10 +19,8 @@ mod demo;
 #[app(device = microbit::hal::nrf51)]
 const APP: () = {
 
-    static mut DISPLAY_PORT: DisplayPort = ();
-    static mut DISPLAY_TIMER: MicrobitDisplayTimer<nrf51::TIMER1> = ();
     static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
-    static mut DISPLAY: Display<MicrobitFrame> = ();
+    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
     static mut BUTTON_MONITOR: ABMonitor = ();
     static mut DEMO: demo::Demo = ();
 
@@ -35,11 +33,14 @@ const APP: () = {
         let p: nrf51::Peripherals = device;
 
         let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
-        let mut display_port = DisplayPort::new(display_pins);
+        let display_port = DisplayPort::new(display_pins);
         let (button_a, button_b) = buttons::from_pins(button_pins);
+        let mut display = MicrobitDisplay::new(display_port, p.TIMER1);
         let button_monitor = ABMonitor::new(button_a, button_b);
-        let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
-        display::initialise(&mut timer, &mut display_port);
+
+        let mut frame = MicrobitFrame::const_default();
+        frame.set(demo::initial_frame());
+        display.set_frame(&frame);
 
         // Starting the low-frequency clock (needed for RTC to work)
         p.CLOCK.tasks_lfclkstart.write(|w| unsafe { w.bits(1) });
@@ -54,30 +55,18 @@ const APP: () = {
         rtc0.start();
 
         init::LateResources {
-            DISPLAY_PORT : display_port,
-            DISPLAY_TIMER : timer,
+            DISPLAY : display,
             ANIM_TIMER : rtc0,
             DEMO : demo::Demo::new(),
-            DISPLAY : {
-                let mut frame = MicrobitFrame::const_default();
-                frame.set(demo::initial_frame());
-                let mut display = Display::new();
-                display.set_frame(&frame);
-                display
-            },
             BUTTON_MONITOR : button_monitor,
         }
     }
 
     #[interrupt(priority = 2,
                 spawn = [handle_buttons],
-                resources = [DISPLAY_TIMER, DISPLAY_PORT, DISPLAY])]
+                resources = [DISPLAY])]
     fn TIMER1() {
-        let display_event = display::handle_event(
-            &mut resources.DISPLAY,
-            resources.DISPLAY_TIMER,
-            resources.DISPLAY_PORT,
-        );
+        let display_event = resources.DISPLAY.handle_event();
         if display_event.is_new_row() {
             spawn.handle_buttons().ok();
         }

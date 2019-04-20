@@ -16,7 +16,7 @@ use tiny_led_matrix::DisplayTimer;
 /// CC0_CLEAR shortcut to implement the primary cycle.
 ///
 /// [`DisplayTimer`]: tiny_led_matrix::DisplayTimer
-pub struct MicrobitDisplayTimer<T: Nrf51Timer>(HiResTimer<T, u16>);
+pub(crate) struct MicrobitDisplayTimer<T: Nrf51Timer>(HiResTimer<T, u16>);
 
 impl<T: As16BitTimer> MicrobitDisplayTimer<T> {
     /// Returns a new `MicrobitDisplayTimer` wrapping the passed TIMER.

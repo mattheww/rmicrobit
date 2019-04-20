@@ -7,7 +7,7 @@ use rtfm::app;
 use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
 use microbit::hal::nrf51;
 use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::display::{self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame};
+use microbit_blinkenlights::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
 use microbit_blinkenlights::gpio::PinsByKind;
 use microbit_blinkenlights::graphics::image::GreyscaleImage;
 
@@ -25,10 +25,8 @@ fn heart_image(inner_brightness: u8) -> GreyscaleImage {
 #[app(device = microbit::hal::nrf51)]
 const APP: () = {
 
-    static mut DISPLAY_PORT: DisplayPort = ();
-    static mut DISPLAY_TIMER: MicrobitDisplayTimer<nrf51::TIMER1> = ();
+    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
     static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
-    static mut DISPLAY: Display<MicrobitFrame> = ();
 
     #[init]
     fn init() -> init::LateResources {
@@ -47,27 +45,19 @@ const APP: () = {
         rtc0.start();
 
         let PinsByKind {display_pins, ..} = p.GPIO.split_by_kind();
-        let mut display_port = DisplayPort::new(display_pins);
-
-        let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
-        display::initialise(&mut timer, &mut display_port);
+        let display_port = DisplayPort::new(display_pins);
+        let display = MicrobitDisplay::new(display_port, p.TIMER1);
 
         init::LateResources {
-            DISPLAY_PORT : display_port,
-            DISPLAY_TIMER : timer,
+            DISPLAY : display,
             ANIM_TIMER : rtc0,
-            DISPLAY : Display::new(),
         }
     }
 
     #[interrupt(priority = 2,
-                resources = [DISPLAY_TIMER, DISPLAY_PORT, DISPLAY])]
+                resources = [DISPLAY])]
     fn TIMER1() {
-        display::handle_event(
-            &mut resources.DISPLAY,
-            resources.DISPLAY_TIMER,
-            resources.DISPLAY_PORT,
-        );
+        resources.DISPLAY.handle_event();
     }
 
     #[interrupt(priority = 1,

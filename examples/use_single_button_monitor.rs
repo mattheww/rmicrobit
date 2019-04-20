@@ -9,7 +9,7 @@ use rtfm::app;
 use microbit::hal::nrf51;
 use microbit_blinkenlights::prelude::*;
 use microbit_blinkenlights::display::{
-    self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame, Render};
+    DisplayPort, MicrobitDisplay, MicrobitFrame, Render};
 use microbit_blinkenlights::graphics::font;
 use microbit_blinkenlights::gpio::PinsByKind;
 use microbit_blinkenlights::buttons;
@@ -49,11 +49,9 @@ impl DemoState {
 #[app(device = microbit::hal::nrf51)]
 const APP: () = {
 
-    static mut DISPLAY_PORT: DisplayPort = ();
-    static mut DISPLAY_TIMER: MicrobitDisplayTimer<nrf51::TIMER1> = ();
-    static mut DISPLAY: Display<MicrobitFrame> = ();
     static mut MONITOR_A: ButtonAMonitor = ();
     static mut MONITOR_B: ButtonBMonitor = ();
+    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
     static mut DEMO: DemoState = ();
 
     #[init]
@@ -62,25 +60,19 @@ const APP: () = {
         let p: nrf51::Peripherals = device;
 
         let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
-        let mut display_port = DisplayPort::new(display_pins);
+        let display_port = DisplayPort::new(display_pins);
         let (button_a, button_b) = buttons::from_pins(button_pins);
+        let mut display = MicrobitDisplay::new(display_port, p.TIMER1);
         let monitor_a = ButtonAMonitor::new(button_a);
         let monitor_b = ButtonBMonitor::new(button_b);
-
-        let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
-        display::initialise(&mut timer, &mut display_port);
         let demo = DemoState{letter: b'-'};
 
+        let mut frame = MicrobitFrame::const_default();
+        frame.set(&demo.current_graphic());
+        display.set_frame(&frame);
+
         init::LateResources {
-            DISPLAY_PORT : display_port,
-            DISPLAY_TIMER : timer,
-            DISPLAY : {
-                let mut frame = MicrobitFrame::const_default();
-                frame.set(&demo.current_graphic());
-                let mut display = Display::new();
-                display.set_frame(&frame);
-                display
-            },
+            DISPLAY : display,
             MONITOR_A : monitor_a,
             MONITOR_B : monitor_b,
             DEMO: demo
@@ -89,13 +81,9 @@ const APP: () = {
 
     #[interrupt(priority = 2,
                 spawn = [handle_buttons],
-                resources = [DISPLAY_TIMER, DISPLAY_PORT, DISPLAY])]
+                resources = [DISPLAY])]
     fn TIMER1() {
-        let display_event = display::handle_event(
-            &mut resources.DISPLAY,
-            resources.DISPLAY_TIMER,
-            resources.DISPLAY_PORT,
-        );
+        let display_event = resources.DISPLAY.handle_event();
         if display_event.is_new_row() {
             spawn.handle_buttons().ok();
         }
