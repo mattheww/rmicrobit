@@ -7,7 +7,7 @@
 //! [`Frame`]: tiny_led_matrix::Frame
 
 use tiny_led_matrix::{Frame, Matrix, RowPlan};
-use crate::display_port::pin_constants::{MATRIX_COLS, MATRIX_ROWS};
+use crate::display::display_port::pin_constants::{MATRIX_COLS, MATRIX_ROWS};
 
 /// Implementation of [`Matrix`] for the microbit's LED display.
 ///
@@ -52,8 +52,8 @@ impl Matrix for MicrobitMatrix {
 /// Use the [`.set()`](`Frame::set`) method to store an image (something
 /// implementing [`Render`]) in the frame.
 ///
-/// Note you'll have to `use microbit_blinkenlights::Frame` to make `set()`
-/// available.
+/// Note you'll have to `use microbit_blinkenlights::display::Frame` (or `use
+/// microbit_blinkenlights::prelude::*`) to make `set()` available.
 ///
 /// [`Frame`]: tiny_led_matrix::Frame
 /// [`Render`]: tiny_led_matrix::Render

@@ -28,7 +28,7 @@ use microbit::hal::gpio::{Input, Floating, GpioExt};
 ///
 /// See also [`pin_constants`] for dealing with these pin numbers.
 ///
-/// [`pin_constants`]: crate::display_port::pin_constants
+/// [`pin_constants`]: crate::display::display_port::pin_constants
 ///
 /// The pins for columns 1,2,3,7,8,9 are also presented on the edge connector.
 pub struct DisplayPins {

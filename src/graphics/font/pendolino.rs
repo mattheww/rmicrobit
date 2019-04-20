@@ -23,8 +23,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-use crate::font::{font_entry, PRINTABLE_COUNT};
-use crate::image::BitImage;
+use crate::graphics::font::{font_entry, PRINTABLE_COUNT};
+use crate::graphics::image::BitImage;
 
 // From lancaster-university/microbit-dal source/core/MicroBitFont.cpp
 // as of v2.1.1

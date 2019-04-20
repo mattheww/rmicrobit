@@ -1,7 +1,7 @@
-use microbit_blinkenlights::Render;
-use microbit_blinkenlights::image::GreyscaleImage;
-use microbit_blinkenlights::scrolling::{Animate, ScrollingImages};
-use microbit_blinkenlights::scrolling_text;
+use microbit_blinkenlights::display::Render;
+use microbit_blinkenlights::graphics::image::GreyscaleImage;
+use microbit_blinkenlights::graphics::scrolling::{Animate, ScrollingImages};
+use microbit_blinkenlights::graphics::scrolling_text;
 
 pub trait Animator {
 

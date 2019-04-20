@@ -6,7 +6,7 @@ extern crate panic_semihosting;
 use rtfm::app;
 use microbit::hal::nrf51;
 use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::{self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame};
+use microbit_blinkenlights::display::{self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame};
 use microbit_blinkenlights::gpio::PinsByKind;
 use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
 use microbit_blinkenlights::buttons;
@@ -39,7 +39,7 @@ const APP: () = {
         let (button_a, button_b) = buttons::from_pins(button_pins);
         let button_monitor = ABMonitor::new(button_a, button_b);
         let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
-        microbit_blinkenlights::initialise_display(&mut timer, &mut display_port);
+        display::initialise(&mut timer, &mut display_port);
 
         // Starting the low-frequency clock (needed for RTC to work)
         p.CLOCK.tasks_lfclkstart.write(|w| unsafe { w.bits(1) });
@@ -73,7 +73,7 @@ const APP: () = {
                 spawn = [handle_buttons],
                 resources = [DISPLAY_TIMER, DISPLAY_PORT, DISPLAY])]
     fn TIMER1() {
-        let display_event = microbit_blinkenlights::handle_display_event(
+        let display_event = display::handle_event(
             &mut resources.DISPLAY,
             resources.DISPLAY_TIMER,
             resources.DISPLAY_PORT,

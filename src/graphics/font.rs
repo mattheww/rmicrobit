@@ -1,8 +1,12 @@
 //! A 5×5 ascii font.
+//!
+//! This is a copy of the 'pendolino' font from the [micro:bit runtime][dal].
+//!
+//! [dal]: https://lancaster-university.github.io/microbit-docs/
 
 mod pendolino;
 
-use crate::image::BitImage;
+use crate::graphics::image::BitImage;
 
 /// Index of the first character in the standard font
 pub const PRINTABLE_START: usize = 32;

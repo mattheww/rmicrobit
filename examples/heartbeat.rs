@@ -7,9 +7,9 @@ use rtfm::app;
 use microbit::hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
 use microbit::hal::nrf51;
 use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::{self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame};
+use microbit_blinkenlights::display::{self, Display, DisplayPort, MicrobitDisplayTimer, MicrobitFrame};
 use microbit_blinkenlights::gpio::PinsByKind;
-use microbit_blinkenlights::image::GreyscaleImage;
+use microbit_blinkenlights::graphics::image::GreyscaleImage;
 
 fn heart_image(inner_brightness: u8) -> GreyscaleImage {
     let b = inner_brightness;
@@ -50,7 +50,7 @@ const APP: () = {
         let mut display_port = DisplayPort::new(display_pins);
 
         let mut timer = MicrobitDisplayTimer::new(p.TIMER1);
-        microbit_blinkenlights::initialise_display(&mut timer, &mut display_port);
+        display::initialise(&mut timer, &mut display_port);
 
         init::LateResources {
             DISPLAY_PORT : display_port,
@@ -63,7 +63,7 @@ const APP: () = {
     #[interrupt(priority = 2,
                 resources = [DISPLAY_TIMER, DISPLAY_PORT, DISPLAY])]
     fn TIMER1() {
-        microbit_blinkenlights::handle_display_event(
+        display::handle_event(
             &mut resources.DISPLAY,
             resources.DISPLAY_TIMER,
             resources.DISPLAY_PORT,

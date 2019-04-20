@@ -2,9 +2,9 @@
 
 use tiny_led_matrix::Render;
 
-use crate::font;
-use crate::image::BitImage;
-use crate::scrolling::{Animate, ScrollingState, Scrollable};
+use crate::graphics::font;
+use crate::graphics::image::BitImage;
+use crate::graphics::scrolling::{Animate, ScrollingState, Scrollable};
 
 /// A [`Scrollable`] displaying a static ascii byte-string slice.
 #[derive(Default)]
