@@ -48,8 +48,9 @@ impl<T: As16BitTimer> MicrobitDisplay<T> {
     ///
     /// Returns the `DisplayPort` and `nrf51::TIMER`*n* instance.
     ///
-    /// Stops the TIMER.
-    pub fn free(self) -> (DisplayPort, T) {
+    /// Turns all the LEDs off and stops the TIMER.
+    pub fn free(mut self) -> (DisplayPort, T) {
+        self.port.blank();
         (self.port, self.timer.free())
     }
 
