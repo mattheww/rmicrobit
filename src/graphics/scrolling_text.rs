@@ -1,4 +1,24 @@
 //! Support for scrolling ascii text horizontally.
+//!
+//! # Examples
+//!
+//! ```ignore
+//! use microbit_blinkenlights::prelude::*;
+//! use microbit_blinkenlights::display::{MicrobitDisplay, MicrobitFrame};
+//! use microbit_blinkenlights::graphics::scrolling_text::ScrollingStaticText;
+//! let mut display = MicrobitDisplay::new(...);
+//! let mut scroller = ScrollingStaticText::default();
+//! let frame = MicrobitFrame::default();
+//! scroller.set_message(b"Hello, world!");
+//! while !scroller.is_finished() {
+//!     // every 50ms or so
+//!     scroller.tick();
+//!     frame.set(scroller);
+//!     display.set_frame(frame);
+//! }
+//! ```
+//!
+//! See examples/scroll_text.rs for a complete example.
 
 use tiny_led_matrix::Render;
 

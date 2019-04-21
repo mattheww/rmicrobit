@@ -1,7 +1,37 @@
 //! Support for scrolling sequences of 5×5 images horizontally.
 //!
-//! To create a new kind of scolling sequence, you can implement
+//! To create a new kind of scrolling sequence, you can implement
 //! [`Scrollable`] and use the result as an [`Animate`].
+//!
+//! See [`scrolling_text`] for scrolling text strings.
+//!
+//! # Example
+//!
+//! ```ignore
+//! use microbit_blinkenlights::prelude::*;
+//! use microbit_blinkenlights::display::{MicrobitDisplay, MicrobitFrame};
+//! use microbit_blinkenlights::graphics::scrolling::ScrollingImages;
+//! const BLANK: BitImage = BitImage::blank();
+//! const HEART: BitImage = BitImage::new(&[
+//!     [0, 1, 0, 1, 0],
+//!     [1, 0, 1, 0, 1],
+//!     [1, 0, 0, 0, 1],
+//!     [0, 1, 0, 1, 0],
+//!     [0, 0, 1, 0, 0],
+//! ]);
+//! let mut display = MicrobitDisplay::new(...);
+//! let mut scroller = ScrollingImages::default();
+//! let frame = MicrobitFrame::default();
+//! scroller.set_images(&[&HEART, &BLANK, &HEART]);
+//! while !scroller.is_finished() {
+//!     // every 50ms or so
+//!     scroller.tick();
+//!     frame.set(scroller);
+//!     display.set_frame(frame);
+//! }
+//! ```
+//!
+//! See examples/scroll_images.rs for a complete example.
 //!
 //! [`Scrollable`]: scrolling::Scrollable
 //! [`Animate`]: scrolling::Animate
