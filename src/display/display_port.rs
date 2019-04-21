@@ -114,12 +114,15 @@ impl DisplayPort {
     /// Takes ownership of the display's GPIO pins and returns a `DisplayPort`.
     ///
     /// Sets the pins to output mode.
+    ///
+    /// Sets all the pins low (blanking the display).
     // Note we never call any methods on the nrf51-hal Pins held in
     // DisplayPins; we just use them as a token proving that nothing else is
     // talking to this part of the GPIO space.
     pub fn new(pins: DisplayPins) -> DisplayPort {
         let mut port = DisplayPort(pins);
         port.reset();
+        port.blank();
         port
     }
 
@@ -128,7 +131,7 @@ impl DisplayPort {
         self.0
     }
 
-    /// Set all the pins to output mode.
+    /// Sets all the pins to output mode.
     fn reset(&mut self) {
         // NOTE(unsafe) writes restricted to pins we own.
         unsafe {
@@ -172,6 +175,10 @@ impl DisplayPort {
         }
     }
 
+    /// Sets all pins low, blanking the display.
+    pub fn blank(&mut self) {
+        self.clear(ROW_PINS_MASK | COL_PINS_MASK);
+    }
 }
 
 
@@ -183,8 +190,7 @@ impl DisplayPort {
 impl DisplayControl for DisplayPort {
 
     fn initialise_for_display(&mut self) {
-        // Start with all cols high, leaving all rows low.
-        self.set(COL_PINS_MASK);
+        // Do nothing: new() has set the pin direction.
     }
 
     fn display_row_leds(&mut self, row: usize, cols: u32) {
