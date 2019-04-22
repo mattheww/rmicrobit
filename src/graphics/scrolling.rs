@@ -1,7 +1,14 @@
 //! Support for scrolling sequences of 5×5 images horizontally.
 //!
-//! To create a new kind of scrolling sequence, you can implement
-//! [`Scrollable`] and use the result as an [`Animate`].
+//! Each kind of scrolling sequence is represented by a type implementing
+//! [`Animate`] (for controlling the sequence) and [`Render`] (for displaying
+//! it).
+//!
+//! To create a new kind of scrolling sequence, make a new implementation of
+//! [`Scrollable`].
+//!
+//! The [`ScrollingImages`] implementation can be used for static slices of
+//! any type implementing [`Render`].
 //!
 //! See [`scrolling_text`] for scrolling text strings.
 //!
@@ -34,7 +41,9 @@
 //! See examples/scroll_images.rs for a complete example.
 //!
 //! [`Scrollable`]: scrolling::Scrollable
+//! [`ScrollingImages`]: scrolling::ScrollingImages
 //! [`Animate`]: scrolling::Animate
+//! [`Render`]: tiny_led_matrix::Render
 
 use tiny_led_matrix::Render;
 
@@ -93,7 +102,7 @@ impl ScrollingState {
 ///
 /// `Scrollable`s automatically implement [`Animate`].
 ///
-/// When a Scrollable also implements Render, the rendered image is the
+/// When a `Scrollable` also implements `Render`, the rendered image is the
 /// current state of the animation.
 pub trait Scrollable {
 
@@ -115,7 +124,7 @@ pub trait Scrollable {
 
     /// Returns the brightness value for a single LED in the current state.
     ///
-    /// Use this to implement Render.
+    /// Use this to implement `Render`.
     fn current_brightness_at(&self, x: usize, y: usize) -> u8 {
         if self.state().index > self.length() {return 0}
         let state = self.state();
