@@ -20,8 +20,8 @@
 //! let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
 //! ```
 
-use microbit::hal::nrf51::GPIO;
-use microbit::hal::gpio::{Input, Floating, GpioExt};
+use crate::nrf51::GPIO;
+use nrf51_hal::gpio::{Input, Floating, GpioExt};
 
 
 /// The GPIO pins connected to the micro:bit's LED display.
@@ -35,47 +35,47 @@ pub struct DisplayPins {
     /// The GPIO pin connected to LED matrix column 1
     ///
     /// Also connected to edge connector strip 3
-    pub pin4: microbit::hal::gpio::gpio::PIN4<Input<Floating>>,
+    pub pin4: nrf51_hal::gpio::gpio::PIN4<Input<Floating>>,
     /// The GPIO pin connected to LED matrix column 2
     ///
     /// Also connected to edge connector strip 4
-    pub pin5: microbit::hal::gpio::gpio::PIN5<Input<Floating>>,
+    pub pin5: nrf51_hal::gpio::gpio::PIN5<Input<Floating>>,
     /// The GPIO pin connected to LED matrix column 3
     ///
     /// Also connected to edge connector strip 10
-    pub pin6: microbit::hal::gpio::gpio::PIN6<Input<Floating>>,
+    pub pin6: nrf51_hal::gpio::gpio::PIN6<Input<Floating>>,
     /// The GPIO pin connected to LED matrix column 4
-    pub pin7: microbit::hal::gpio::gpio::PIN7<Input<Floating>>,
+    pub pin7: nrf51_hal::gpio::gpio::PIN7<Input<Floating>>,
     /// The GPIO pin connected to LED matrix column 5
-    pub pin8: microbit::hal::gpio::gpio::PIN8<Input<Floating>>,
+    pub pin8: nrf51_hal::gpio::gpio::PIN8<Input<Floating>>,
     /// The GPIO pin connected to LED matrix column 6
-    pub pin9: microbit::hal::gpio::gpio::PIN9<Input<Floating>>,
+    pub pin9: nrf51_hal::gpio::gpio::PIN9<Input<Floating>>,
     /// The GPIO pin connected to LED matrix column 7
     ///
     /// Also connected to edge connector strip 9
-    pub pin10: microbit::hal::gpio::gpio::PIN10<Input<Floating>>,
+    pub pin10: nrf51_hal::gpio::gpio::PIN10<Input<Floating>>,
     /// The GPIO pin connected to LED matrix column 8
     ///
     /// Also connected to edge connector strip 7
-    pub pin11: microbit::hal::gpio::gpio::PIN11<Input<Floating>>,
+    pub pin11: nrf51_hal::gpio::gpio::PIN11<Input<Floating>>,
     /// The GPIO pin connected to LED matrix column 9
     ///
     /// Also connected to edge connector strip 6
-    pub pin12: microbit::hal::gpio::gpio::PIN12<Input<Floating>>,
+    pub pin12: nrf51_hal::gpio::gpio::PIN12<Input<Floating>>,
     /// The GPIO pin connected to LED matrix row 1
-    pub pin13: microbit::hal::gpio::gpio::PIN13<Input<Floating>>,
+    pub pin13: nrf51_hal::gpio::gpio::PIN13<Input<Floating>>,
     /// The GPIO pin connected to LED matrix row 2
-    pub pin14: microbit::hal::gpio::gpio::PIN14<Input<Floating>>,
+    pub pin14: nrf51_hal::gpio::gpio::PIN14<Input<Floating>>,
     /// The GPIO pin connected to LED matrix row 3
-    pub pin15: microbit::hal::gpio::gpio::PIN15<Input<Floating>>,
+    pub pin15: nrf51_hal::gpio::gpio::PIN15<Input<Floating>>,
 }
 
 /// The GPIO pins connected to the micro:bit's user buttons.
 pub struct ButtonPins {
     /// The GPIO pin connected to Button A.
-    pub pin17: microbit::hal::gpio::gpio::PIN17<Input<Floating>>,
+    pub pin17: nrf51_hal::gpio::gpio::PIN17<Input<Floating>>,
     /// The GPIO pin connected to Button B.
-    pub pin26: microbit::hal::gpio::gpio::PIN26<Input<Floating>>,
+    pub pin26: nrf51_hal::gpio::gpio::PIN26<Input<Floating>>,
 }
 
 /// The GPIO pins connected to the micro:bit's USB serial port.
@@ -84,9 +84,9 @@ pub struct ButtonPins {
 /// which then makes the serial connection available over USB.
 pub struct SerialPins {
     /// The 'tx' GPIO pin (micro:bit to USB)
-    pub pin24: microbit::hal::gpio::gpio::PIN24<Input<Floating>>,
+    pub pin24: nrf51_hal::gpio::gpio::PIN24<Input<Floating>>,
     /// The 'rx' GPIO pin (USB to micro:bit)
-    pub pin25: microbit::hal::gpio::gpio::PIN25<Input<Floating>>,
+    pub pin25: nrf51_hal::gpio::gpio::PIN25<Input<Floating>>,
 }
 
 /// The GPIO pins used for the micro:bit's I2C interface.
@@ -97,11 +97,11 @@ pub struct I2cPins {
     /// The I2C SCL (clock) GPIO pin.
     ///
     /// Also connected to edge connector strip 19.
-    pub pin0: microbit::hal::gpio::gpio::PIN0<Input<Floating>>,
+    pub pin0: nrf51_hal::gpio::gpio::PIN0<Input<Floating>>,
     /// The I2C SDA (data) GPIO pin.
     ///
     /// Also connected to edge connector strip 20.
-    pub pin30: microbit::hal::gpio::gpio::PIN30<Input<Floating>>,
+    pub pin30: nrf51_hal::gpio::gpio::PIN30<Input<Floating>>,
 }
 
 /// The GPIO pins available on the edge connector and not otherwise connected.
@@ -110,40 +110,40 @@ pub struct I2cPins {
 /// excluded from this struct.
 pub struct EdgeConnectorPins {
     /// The GPIO pin connected to edge connector ring 2
-    pub pin1: microbit::hal::gpio::gpio::PIN1<Input<Floating>>,
+    pub pin1: nrf51_hal::gpio::gpio::PIN1<Input<Floating>>,
     /// The GPIO pin connected to edge connector ring 1
-    pub pin2: microbit::hal::gpio::gpio::PIN2<Input<Floating>>,
+    pub pin2: nrf51_hal::gpio::gpio::PIN2<Input<Floating>>,
     /// The GPIO pin connected to edge connector ring 0
-    pub pin3: microbit::hal::gpio::gpio::PIN3<Input<Floating>>,
+    pub pin3: nrf51_hal::gpio::gpio::PIN3<Input<Floating>>,
     /// The GPIO pin connected to edge connector strip 16
-    pub pin16: microbit::hal::gpio::gpio::PIN16<Input<Floating>>,
+    pub pin16: nrf51_hal::gpio::gpio::PIN16<Input<Floating>>,
     /// The GPIO pin connected to edge connector strip 8
-    pub pin18: microbit::hal::gpio::gpio::PIN18<Input<Floating>>,
+    pub pin18: nrf51_hal::gpio::gpio::PIN18<Input<Floating>>,
     /// The GPIO pin connected to edge connector strip 12
-    pub pin20: microbit::hal::gpio::gpio::PIN20<Input<Floating>>,
+    pub pin20: nrf51_hal::gpio::gpio::PIN20<Input<Floating>>,
     /// The GPIO pin connected to edge connector strip 15
     ///
     /// Conventionally used for SPI MOSI.
-    pub pin21: microbit::hal::gpio::gpio::PIN21<Input<Floating>>,
+    pub pin21: nrf51_hal::gpio::gpio::PIN21<Input<Floating>>,
     /// The GPIO pin connected to edge connector strip 14
     ///
     /// Conventionally used for SPI MISO.
-    pub pin22: microbit::hal::gpio::gpio::PIN22<Input<Floating>>,
+    pub pin22: nrf51_hal::gpio::gpio::PIN22<Input<Floating>>,
     /// The GPIO pin connected to edge connector strip 13
     ///
     /// Conventionally used for SPI SCK.
-    pub pin23: microbit::hal::gpio::gpio::PIN23<Input<Floating>>,
+    pub pin23: nrf51_hal::gpio::gpio::PIN23<Input<Floating>>,
 }
 
 /// The remaining GPIO pins.
 ///
 /// As far as I know none of these pins have any use.
 pub struct OtherPins {
-    pub pin19: microbit::hal::gpio::gpio::PIN19<Input<Floating>>,
-    pub pin27: microbit::hal::gpio::gpio::PIN27<Input<Floating>>,
-    pub pin28: microbit::hal::gpio::gpio::PIN28<Input<Floating>>,
-    pub pin29: microbit::hal::gpio::gpio::PIN29<Input<Floating>>,
-    pub pin31: microbit::hal::gpio::gpio::PIN31<Input<Floating>>,
+    pub pin19: nrf51_hal::gpio::gpio::PIN19<Input<Floating>>,
+    pub pin27: nrf51_hal::gpio::gpio::PIN27<Input<Floating>>,
+    pub pin28: nrf51_hal::gpio::gpio::PIN28<Input<Floating>>,
+    pub pin29: nrf51_hal::gpio::gpio::PIN29<Input<Floating>>,
+    pub pin31: nrf51_hal::gpio::gpio::PIN31<Input<Floating>>,
 }
 
 /// The micro:bit's GPIO pins, organised in functional groups.

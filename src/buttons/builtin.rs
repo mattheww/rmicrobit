@@ -10,8 +10,8 @@
 //! [`buttons`]: crate::buttons
 //! [`Button`]: crate::buttons::core::Button
 
-use microbit::hal::gpio::{Floating, Input};
-use microbit::hal::gpio::gpio::{PIN17, PIN26};
+use nrf51_hal::gpio::{Floating, Input};
+use nrf51_hal::gpio::gpio::{PIN17, PIN26};
 use crate::gpio::ButtonPins;
 use crate::buttons::core::Button;
 use crate::buttons::debouncing::TrivialDebouncer;

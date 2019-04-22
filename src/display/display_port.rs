@@ -4,7 +4,7 @@
 //!
 //! [`DisplayControl`]: tiny_led_matrix::DisplayControl
 
-use microbit::hal::nrf51;
+use crate::nrf51;
 use tiny_led_matrix::DisplayControl;
 use crate::gpio::DisplayPins;
 use pin_constants::*;

@@ -10,7 +10,7 @@ readme = "README.md"
 repository = "https://github.com/mattheww/microbit-blinkenlights/"
 
 [dependencies]
-microbit = "0.7.0"
+nrf51-hal = "^0.6.2"
 tiny-led-matrix = "0.2"
 
 [dev-dependencies]

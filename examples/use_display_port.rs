@@ -5,18 +5,16 @@
 
 extern crate panic_semihosting;
 
-extern crate microbit;
-
 use rtfm::app;
-use microbit::hal::prelude::*;
-use microbit::hal::hi_res_timer::TimerFrequency;
-use microbit::hal::delay::DelayTimer;
+use microbit_blinkenlights::nrf51_hal::prelude::*;
+use microbit_blinkenlights::nrf51_hal::hi_res_timer::TimerFrequency;
+use microbit_blinkenlights::nrf51_hal::delay::DelayTimer;
 use microbit_blinkenlights::prelude::*;
 use microbit_blinkenlights::gpio::PinsByKind;
 use microbit_blinkenlights::display::DisplayPort;
 use microbit_blinkenlights::display::pin_constants::{col_pin_number, row_pin_number, COL_PINS_MASK};
 
-#[app(device = microbit::hal::nrf51)]
+#[app(device = microbit_blinkenlights::nrf51)]
 const APP: () = {
 
     #[init]

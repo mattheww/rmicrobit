@@ -4,7 +4,7 @@
 extern crate panic_semihosting;
 
 use rtfm::app;
-use microbit::hal::nrf51;
+use microbit_blinkenlights::nrf51;
 use microbit_blinkenlights::prelude::*;
 use microbit_blinkenlights::display::{
     DisplayPort, MicrobitDisplay, MicrobitFrame, Render};
@@ -40,7 +40,7 @@ impl DemoState {
 }
 
 
-#[app(device = microbit::hal::nrf51)]
+#[app(device = microbit_blinkenlights::nrf51)]
 const APP: () = {
 
     static mut BUTTON_A: ButtonA = ();

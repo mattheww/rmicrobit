@@ -2,7 +2,7 @@
 //!
 //! [`DisplayTimer`]: tiny_led_matrix::DisplayTimer
 
-use microbit::hal::hi_res_timer::{As16BitTimer, HiResTimer, Nrf51Timer, TimerCc, TimerFrequency};
+use nrf51_hal::hi_res_timer::{As16BitTimer, HiResTimer, Nrf51Timer, TimerCc, TimerFrequency};
 use tiny_led_matrix::DisplayTimer;
 
 /// A TIMER peripheral programmed to manage the display.

@@ -1,6 +1,6 @@
 //! Wrapper for a Display, its GPIO pins, and a timer.
 
-use microbit::hal::hi_res_timer::As16BitTimer;
+use nrf51_hal::hi_res_timer::As16BitTimer;
 use tiny_led_matrix::{Display, Event as DisplayEvent};
 use crate::display::display_port::DisplayPort;
 use crate::display::matrix::MicrobitFrame;

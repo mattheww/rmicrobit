@@ -38,7 +38,7 @@
 //! [`PollButton`]: crate::buttons::core::PollButton
 //! [`Button`]: crate::buttons::core::Button
 
-use microbit::hal::hal::digital::InputPin;
+use crate::embedded_hal::digital::InputPin;
 use crate::buttons::debouncing::Debounce;
 
 /// Old and new button states.

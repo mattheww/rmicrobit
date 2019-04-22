@@ -4,8 +4,8 @@
 extern crate panic_semihosting;
 
 use rtfm::app;
-use microbit::hal::lo_res_timer::{LoResTimer, FREQ_8HZ};
-use microbit::hal::nrf51;
+use microbit_blinkenlights::nrf51;
+use microbit_blinkenlights::nrf51_hal::lo_res_timer::{LoResTimer, FREQ_8HZ};
 use microbit_blinkenlights::prelude::*;
 use microbit_blinkenlights::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
 use microbit_blinkenlights::gpio::PinsByKind;
@@ -30,7 +30,7 @@ const GREY_HEART: GreyscaleImage = GreyscaleImage::new(&[
 const IMAGES: &'static [&'static GreyscaleImage] =
     &[&HEART, &BLANK, &GREY_HEART, &BLANK, &HEART];
 
-#[app(device = microbit::hal::nrf51)]
+#[app(device = microbit_blinkenlights::nrf51)]
 const APP: () = {
 
     static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
