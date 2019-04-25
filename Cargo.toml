@@ -14,8 +14,7 @@ nrf51-hal = "^0.6.2"
 tiny-led-matrix = "0.2"
 
 [dev-dependencies]
-cortex-m-semihosting = { version = "0.3.2" }
+cortex-m-semihosting = "0.3.2"
 panic-semihosting = "0.5.1"
-cortex-m = "0.5"
-cortex-m-rtfm = "0.4.2"
+cortex-m-rtfm = "0.4.3"
 numtoa = "0.2.3"
