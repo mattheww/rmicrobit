@@ -1,5 +1,7 @@
-This is an experimental Rust library for controlling the 5×5 LED display of a
+This is an experimental Rust library for controlling a
 [micro:bit](https://microbit.org/).
+
+It currently supports the 5×5 LED display and the built-in buttons.
 
 
 ## Documentation
@@ -9,7 +11,7 @@ https://mjw.woodcraft.me.uk/2019-mb/rmicrobit/
 
 ## Example usage
 
-See `examples/demo/`.
+See `examples/`.
 
 
 ## Licence
