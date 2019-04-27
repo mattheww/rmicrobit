@@ -6,17 +6,17 @@
 extern crate panic_semihosting;
 
 use rtfm::app;
-use microbit_blinkenlights::nrf51;
-use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::display::{
+use rmicrobit::nrf51;
+use rmicrobit::prelude::*;
+use rmicrobit::display::{
     DisplayPort, MicrobitDisplay, MicrobitFrame, Render};
-use microbit_blinkenlights::graphics::font;
-use microbit_blinkenlights::gpio::PinsByKind;
-use microbit_blinkenlights::buttons;
-use microbit_blinkenlights::buttons::single_lazy::{
+use rmicrobit::graphics::font;
+use rmicrobit::gpio::PinsByKind;
+use rmicrobit::buttons;
+use rmicrobit::buttons::single_lazy::{
     ButtonAMonitor, ButtonBMonitor, ButtonEvent};
 // Alternatively, use this to receive events on press rather than release:
-// use microbit_blinkenlights::buttons::single_eager::{
+// use rmicrobit::buttons::single_eager::{
 //     ButtonAMonitor, ButtonBMonitor, ButtonEvent};
 
 
@@ -46,7 +46,7 @@ impl DemoState {
 }
 
 
-#[app(device = microbit_blinkenlights::nrf51)]
+#[app(device = rmicrobit::nrf51)]
 const APP: () = {
 
     static mut MONITOR_A: ButtonAMonitor = ();

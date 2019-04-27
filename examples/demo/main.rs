@@ -4,19 +4,19 @@
 extern crate panic_semihosting;
 
 use rtfm::app;
-use microbit_blinkenlights::nrf51;
-use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
-use microbit_blinkenlights::gpio::PinsByKind;
-use microbit_blinkenlights::nrf51_hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
-use microbit_blinkenlights::buttons;
-use microbit_blinkenlights::buttons::dual_with_hold::ABMonitor;
+use rmicrobit::nrf51;
+use rmicrobit::prelude::*;
+use rmicrobit::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
+use rmicrobit::gpio::PinsByKind;
+use rmicrobit::nrf51_hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
+use rmicrobit::buttons;
+use rmicrobit::buttons::dual_with_hold::ABMonitor;
 
 mod animation;
 mod demo;
 
 
-#[app(device = microbit_blinkenlights::nrf51)]
+#[app(device = rmicrobit::nrf51)]
 const APP: () = {
 
     static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();

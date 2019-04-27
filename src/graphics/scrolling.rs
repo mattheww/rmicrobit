@@ -15,9 +15,9 @@
 //! # Example
 //!
 //! ```ignore
-//! use microbit_blinkenlights::prelude::*;
-//! use microbit_blinkenlights::display::{MicrobitDisplay, MicrobitFrame};
-//! use microbit_blinkenlights::graphics::scrolling::ScrollingImages;
+//! use rmicrobit::prelude::*;
+//! use rmicrobit::display::{MicrobitDisplay, MicrobitFrame};
+//! use rmicrobit::graphics::scrolling::ScrollingImages;
 //! const BLANK: BitImage = BitImage::blank();
 //! const HEART: BitImage = BitImage::new(&[
 //!     [0, 1, 0, 1, 0],

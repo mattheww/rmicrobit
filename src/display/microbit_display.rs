@@ -28,9 +28,9 @@ impl<T: As16BitTimer> MicrobitDisplay<T> {
     /// # Example
     ///
     /// ```ignore
-    /// use microbit_blinkenlights::prelude::*;
-    /// use microbit_blinkenlights::gpio::PinsByKind;
-    /// use microbit_blinkenlights::display::{DisplayPort, MicrobitDisplay};
+    /// use rmicrobit::prelude::*;
+    /// use rmicrobit::gpio::PinsByKind;
+    /// use rmicrobit::display::{DisplayPort, MicrobitDisplay};
     /// let p: nrf51::Peripherals = _;
     /// let PinsByKind {display_pins, ..} = p.GPIO.split_by_kind();
     /// let display_port = DisplayPort::new(display_pins);

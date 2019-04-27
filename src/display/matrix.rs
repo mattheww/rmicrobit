@@ -52,8 +52,8 @@ impl Matrix for MicrobitMatrix {
 /// Use the [`.set()`](`Frame::set`) method to store an image (something
 /// implementing [`Render`]) in the frame.
 ///
-/// Note you'll have to `use microbit_blinkenlights::display::Frame` (or `use
-/// microbit_blinkenlights::prelude::*`) to make `set()` available.
+/// Note you'll have to `use rmicrobit::display::Frame` (or `use
+/// rmicrobit::prelude::*`) to make `set()` available.
 ///
 /// [`Frame`]: tiny_led_matrix::Frame
 /// [`Render`]: tiny_led_matrix::Render

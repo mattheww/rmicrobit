@@ -4,13 +4,13 @@
 extern crate panic_semihosting;
 
 use rtfm::app;
-use microbit_blinkenlights::nrf51;
-use microbit_blinkenlights::nrf51_hal::lo_res_timer::{LoResTimer, FREQ_8HZ};
-use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
-use microbit_blinkenlights::gpio::PinsByKind;
-use microbit_blinkenlights::graphics::image::GreyscaleImage;
-use microbit_blinkenlights::graphics::scrolling::ScrollingImages;
+use rmicrobit::nrf51;
+use rmicrobit::nrf51_hal::lo_res_timer::{LoResTimer, FREQ_8HZ};
+use rmicrobit::prelude::*;
+use rmicrobit::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
+use rmicrobit::gpio::PinsByKind;
+use rmicrobit::graphics::image::GreyscaleImage;
+use rmicrobit::graphics::scrolling::ScrollingImages;
 
 const BLANK: GreyscaleImage = GreyscaleImage::blank();
 const HEART: GreyscaleImage = GreyscaleImage::new(&[
@@ -30,7 +30,7 @@ const GREY_HEART: GreyscaleImage = GreyscaleImage::new(&[
 const IMAGES: &'static [&'static GreyscaleImage] =
     &[&HEART, &BLANK, &GREY_HEART, &BLANK, &HEART];
 
-#[app(device = microbit_blinkenlights::nrf51)]
+#[app(device = rmicrobit::nrf51)]
 const APP: () = {
 
     static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();

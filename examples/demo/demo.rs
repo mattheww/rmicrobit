@@ -1,9 +1,9 @@
 use numtoa::NumToA;
 
-use microbit_blinkenlights::display::{Render, MAX_BRIGHTNESS};
-use microbit_blinkenlights::graphics::font;
-use microbit_blinkenlights::graphics::image::{GreyscaleImage, BitImage};
-use microbit_blinkenlights::buttons::dual_with_hold::ButtonEvent;
+use rmicrobit::display::{Render, MAX_BRIGHTNESS};
+use rmicrobit::graphics::font;
+use rmicrobit::graphics::image::{GreyscaleImage, BitImage};
+use rmicrobit::buttons::dual_with_hold::ButtonEvent;
 
 use crate::animation::{
     Animator, RefAnimator,

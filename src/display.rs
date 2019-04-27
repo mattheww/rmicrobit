@@ -93,7 +93,7 @@
 //!
 //! # Usage
 //!
-//! `use microbit_blinkenlights::prelude::*` to make trait methods available.
+//! `use rmicrobit::prelude::*` to make trait methods available.
 //!
 //! Choose a timer to drive the display from (`TIMER0`, `TIMER1`, or
 //! `TIMER2`).

@@ -73,9 +73,9 @@ pub mod pin_constants {
 /// # Example
 ///
 /// ```
-/// use microbit_blinkenlights::prelude::*;
-/// use microbit_blinkenlights::gpio::PinsByKind;
-/// use microbit_blinkenlights::pin_constants::{col_pin_number, row_pin_number, COL_PINS_MASK};
+/// use rmicrobit::prelude::*;
+/// use rmicrobit::gpio::PinsByKind;
+/// use rmicrobit::pin_constants::{col_pin_number, row_pin_number, COL_PINS_MASK};
 /// let p: nrf51::Peripherals = _;
 /// let PinsByKind {display_pins, ..} = p.GPIO.split_by_kind();
 /// let mut display_port = DisplayPort::new(display_pins);

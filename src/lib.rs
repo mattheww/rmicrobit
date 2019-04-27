@@ -12,14 +12,14 @@
 //! # Re-exports
 //!
 //! The following dependencies are re-exported under
-//! `microbit_blinkenlights::`, so that crates using this library can be sure
+//! `rmicrobit::`, so that crates using this library can be sure
 //! to be using consistent versions:
 //! - `nrf51` (register-level access to the SoC peripherals)
 //! - `nrf51_hal` (higher-level access to the SoC peripherals)
 //! - `embedded_hal` (traits used by some `nrf51_hal` interfaces)
 //!
 //! In particular, if you use [cortex-m-rtfm], use
-//! `microbit_blinkenlights::nrf51` as the `device` parameter to `#[app]`.
+//! `rmicrobit::nrf51` as the `device` parameter to `#[app]`.
 //!
 //! # Demo
 //!

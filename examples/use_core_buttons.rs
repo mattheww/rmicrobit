@@ -4,15 +4,15 @@
 extern crate panic_semihosting;
 
 use rtfm::app;
-use microbit_blinkenlights::nrf51;
-use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::display::{
+use rmicrobit::nrf51;
+use rmicrobit::prelude::*;
+use rmicrobit::display::{
     DisplayPort, MicrobitDisplay, MicrobitFrame, Render};
-use microbit_blinkenlights::graphics::font;
-use microbit_blinkenlights::gpio::PinsByKind;
-use microbit_blinkenlights::buttons;
-use microbit_blinkenlights::buttons::core::TransitionEvent;
-use microbit_blinkenlights::buttons::builtin::{ButtonA, ButtonB};
+use rmicrobit::graphics::font;
+use rmicrobit::gpio::PinsByKind;
+use rmicrobit::buttons;
+use rmicrobit::buttons::core::TransitionEvent;
+use rmicrobit::buttons::builtin::{ButtonA, ButtonB};
 
 pub struct DemoState {
     letter: u8,
@@ -40,7 +40,7 @@ impl DemoState {
 }
 
 
-#[app(device = microbit_blinkenlights::nrf51)]
+#[app(device = rmicrobit::nrf51)]
 const APP: () = {
 
     static mut BUTTON_A: ButtonA = ();

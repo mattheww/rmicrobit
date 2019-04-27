@@ -4,7 +4,7 @@ This is an experimental Rust library for controlling the 5×5 LED display of a
 
 ## Documentation
 
-https://mjw.woodcraft.me.uk/2019-mb/microbit_blinkenlights/
+https://mjw.woodcraft.me.uk/2019-mb/rmicrobit/
 
 
 ## Example usage

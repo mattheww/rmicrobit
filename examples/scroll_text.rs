@@ -4,16 +4,16 @@
 extern crate panic_semihosting;
 
 use rtfm::app;
-use microbit_blinkenlights::nrf51;
-use microbit_blinkenlights::nrf51_hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
-use microbit_blinkenlights::prelude::*;
-use microbit_blinkenlights::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
-use microbit_blinkenlights::gpio::PinsByKind;
-use microbit_blinkenlights::graphics::scrolling_text::ScrollingStaticText;
+use rmicrobit::nrf51;
+use rmicrobit::nrf51_hal::lo_res_timer::{LoResTimer, FREQ_16HZ};
+use rmicrobit::prelude::*;
+use rmicrobit::display::{DisplayPort, MicrobitDisplay, MicrobitFrame};
+use rmicrobit::gpio::PinsByKind;
+use rmicrobit::graphics::scrolling_text::ScrollingStaticText;
 
 const MESSAGE: &[u8] = b"Hello, world!";
 
-#[app(device = microbit_blinkenlights::nrf51)]
+#[app(device = rmicrobit::nrf51)]
 const APP: () = {
 
     static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();

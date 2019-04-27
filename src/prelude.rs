@@ -2,7 +2,7 @@
 //!
 //! This module is intended to be used as follows:
 //! ```
-//! use microbit_blinkenlights::prelude::*
+//! use rmicrobit::prelude::*
 //! ```
 //!
 //! It exports some of this crate's traits under 'safe' names, so that their

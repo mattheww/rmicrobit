@@ -14,8 +14,8 @@
 //! # Example
 //!
 //! ```
-//! use microbit_blinkenlights::prelude::*;
-//! use microbit_blinkenlights::gpio::PinsByKind;
+//! use rmicrobit::prelude::*;
+//! use rmicrobit::gpio::PinsByKind;
 //! let p: nrf51::Peripherals = _;
 //! let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
 //! ```

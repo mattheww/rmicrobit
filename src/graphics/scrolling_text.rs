@@ -3,9 +3,9 @@
 //! # Examples
 //!
 //! ```ignore
-//! use microbit_blinkenlights::prelude::*;
-//! use microbit_blinkenlights::display::{MicrobitDisplay, MicrobitFrame};
-//! use microbit_blinkenlights::graphics::scrolling_text::ScrollingStaticText;
+//! use rmicrobit::prelude::*;
+//! use rmicrobit::display::{MicrobitDisplay, MicrobitFrame};
+//! use rmicrobit::graphics::scrolling_text::ScrollingStaticText;
 //! let mut display = MicrobitDisplay::new(...);
 //! let mut scroller = ScrollingStaticText::default();
 //! let frame = MicrobitFrame::default();

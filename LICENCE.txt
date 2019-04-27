@@ -1,7 +1,7 @@
-microbit-blinkenlights
-----------------------
+rmicrobit
+---------
 
-microbit-blinkenlights is copyright 2019 Matthew Woodcraft
+rmicrobit is copyright 2019 Matthew Woodcraft
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

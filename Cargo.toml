@@ -1,13 +1,13 @@
 [package]
-name = "microbit-blinkenlights"
-version = "0.2.0"
+name = "rmicrobit"
+version = "0.3.0"
 edition = "2018"
 description = "Drive the micro:bit 5×5 LED display."
 authors = ["Matthew Woodcraft <matthew@woodcraft.me.uk>"]
-documentation = "https://mjw.woodcraft.me.uk/2019-mb/microbit_blinkenlights/"
+documentation = "https://mjw.woodcraft.me.uk/2019-mb/rmicrobit/"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/mattheww/microbit-blinkenlights/"
+repository = "https://github.com/mattheww/rmicrobit/"
 
 [dependencies]
 nrf51-hal = "^0.6.2"

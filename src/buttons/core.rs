@@ -12,11 +12,11 @@
 //! # Examples
 //!
 //! ```ignore
-//! use microbit_blinkenlights::prelude::*;
-//! use microbit_blinkenlights::gpio::PinsByKind;
-//! use microbit_blinkenlights::buttons;
-//! use microbit_blinkenlights::buttons::core::TransitionEvent;
-//! use microbit_blinkenlights::buttons::builtin::{ButtonA, ButtonB};
+//! use rmicrobit::prelude::*;
+//! use rmicrobit::gpio::PinsByKind;
+//! use rmicrobit::buttons;
+//! use rmicrobit::buttons::core::TransitionEvent;
+//! use rmicrobit::buttons::builtin::{ButtonA, ButtonB};
 //! let p: nrf51::Peripherals = _;
 //! let PinsByKind {button_pins, ..} = p.GPIO.split_by_kind();
 //! let (button_a, button_b) = buttons::from_pins(button_pins);
