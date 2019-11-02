@@ -10,7 +10,7 @@ use crate::buttons::core::Transition;
 /// Description of the number of ticks to treat as a 'hold'.
 pub trait HoldDescriptor: {
     /// Integer type wide enough to hold the tick count
-    type width: PartialOrd + AddAssign;
+    type width: PartialOrd + AddAssign + Copy;
     /// Zero of the `width` type
     const HOLD_START: Self::width;
     /// One of the `width` type
