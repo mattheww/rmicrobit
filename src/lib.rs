@@ -35,7 +35,7 @@ pub mod graphics;
 pub mod prelude;
 
 // Re-export the versions of some libraries we're using
+pub use embedded_hal;
 pub use nrf51_hal;
-pub use nrf51_hal::nrf51 as nrf51;
-pub use nrf51_hal::hal as embedded_hal;
+pub use nrf51_hal::nrf51;
 

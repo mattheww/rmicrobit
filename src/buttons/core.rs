@@ -38,7 +38,7 @@
 //! [`PollButton`]: crate::buttons::core::PollButton
 //! [`Button`]: crate::buttons::core::Button
 
-use crate::embedded_hal::digital::InputPin;
+use crate::embedded_hal::digital::v2::InputPin;
 use crate::buttons::debouncing::Debounce;
 
 /// Old and new button states.
@@ -125,13 +125,15 @@ impl<T: InputPin, D: Debounce> Button<T, D> {
     }
 
     fn update_state(&mut self) {
-        self.pressed_state = self.debouncer.debounce(self.pin.is_low());
+        // An nrf51-hal InputPin can't report an error; if we have a different
+        // InputPin implementation, just treat an error as "not pressed".
+        let is_low = self.pin.is_low().unwrap_or(false);
+        self.pressed_state = self.debouncer.debounce(is_low);
     }
 
 }
 
 impl<T: InputPin, D: Debounce> PollButton for Button<T, D> {
-
     fn is_pressed(&self) -> bool {
         self.pressed_state
     }
