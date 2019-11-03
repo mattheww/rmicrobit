@@ -6,12 +6,7 @@ It currently supports the 5×5 LED display and the built-in buttons.
 
 ## Documentation
 
-https://mjw.woodcraft.me.uk/2019-mb/rmicrobit/
-
-
-## Example usage
-
-See `examples/`.
+https://docs.rs/rmicrobit
 
 
 ## Changelog
