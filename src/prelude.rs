@@ -2,11 +2,12 @@
 //!
 //! This module is intended to be used as follows:
 //! ```
-//! use rmicrobit::prelude::*
+//! use rmicrobit::prelude::*;
 //! ```
 //!
-//! It exports some of this crate's traits under 'safe' names, so that their
-//! methods become available without otherwise polluting the global namespace.
+//! It exports some of this crate's traits without binding them to names, so
+//! that their methods become available without otherwise polluting the global
+//! namespace.
 //!
 //! The `pub use` above provides:
 //!
@@ -27,13 +28,13 @@
 // all of them.
 
 #[doc(hidden)]
-pub use tiny_led_matrix::Frame as _tiny_led_matrix_frame;
+pub use tiny_led_matrix::Frame as _;
 
 #[doc(hidden)]
-pub use crate::gpio::MicrobitGpioExt as _mb_gpio_microbit_gpio_ext;
+pub use crate::gpio::MicrobitGpioExt as _;
 
 #[doc(hidden)]
-pub use crate::buttons::core::PollButton as _mb_buttons_core_poll_button;
+pub use crate::buttons::core::PollButton as _;
 
 #[doc(hidden)]
-pub use crate::graphics::scrolling::Animate as _mb_graphics_scrolling_animate;
+pub use crate::graphics::scrolling::Animate as _;
