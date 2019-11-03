@@ -14,6 +14,11 @@ https://mjw.woodcraft.me.uk/2019-mb/rmicrobit/
 See `examples/`.
 
 
+## Changelog
+
+See `CHANGELOG.md`.
+
+
 ## Licence
 
 See LICENCE.txt
