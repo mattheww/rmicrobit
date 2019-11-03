@@ -21,10 +21,30 @@
 //! In particular, if you use [cortex-m-rtfm], use
 //! `rmicrobit::nrf51` as the `device` parameter to `#[app]`.
 //!
-//! # Demo
+//! # Getting started
+//!
+//! See [How to use rmicrobit](_doc_setup).
+//!
+//! # Examples
+//!
+//! There are a number of example programs in the `examples` directory. You
+//! can run an example as follows:
+//!
+//! ```sh
+//! cargo run --example scroll_text -- -x microbit.gdb
+//! ```
 //!
 //! `examples/demo` demonstrates all the features of this crate, using
 //! the [cortex-m-rtfm] framework.
+//!
+//! # Tests
+//!
+//! There are a few tests which can be run on the host machine. Run them as
+//! follows (from a checked-out working copy of `rmicrobit`):
+//! ```text
+//! cargo test --lib --target x86_64-unknown-linux-gnu
+//! ```
+//! (or substitute your development machine's native target)
 //!
 //! [cortex-m-rtfm]: https://rtfm.rs/
 
@@ -39,3 +59,4 @@ pub use embedded_hal;
 pub use nrf51_hal;
 pub use nrf51_hal::nrf51;
 
+pub mod _doc_setup;
