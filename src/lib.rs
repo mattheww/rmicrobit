@@ -26,7 +26,7 @@
 //! `examples/demo` demonstrates all the features of this crate, using
 //! the [cortex-m-rtfm] framework.
 //!
-//! [cortex-m-rtfm]: https://japaric.github.io/cortex-m-rtfm/book/en/
+//! [cortex-m-rtfm]: https://rtfm.rs/
 
 pub mod buttons;
 pub mod display;
