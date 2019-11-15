@@ -22,15 +22,17 @@ fn heart_image(inner_brightness: u8) -> GreyscaleImage {
     ])
 }
 
-#[app(device = rmicrobit::nrf51)]
+#[app(device = rmicrobit::nrf51, peripherals = true)]
 const APP: () = {
 
-    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
-    static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
+    struct Resources {
+        display: MicrobitDisplay<nrf51::TIMER1>,
+        anim_timer: LoResTimer<nrf51::RTC0>,
+    }
 
     #[init]
-    fn init() -> init::LateResources {
-        let p: nrf51::Peripherals = device;
+    fn init(cx: init::Context) -> init::LateResources {
+        let p: nrf51::Peripherals = cx.device;
 
         // Starting the low-frequency clock (needed for RTC to work)
         p.CLOCK.tasks_lfclkstart.write(|w| unsafe { w.bits(1) });
@@ -49,24 +51,24 @@ const APP: () = {
         let display = MicrobitDisplay::new(display_port, p.TIMER1);
 
         init::LateResources {
-            DISPLAY : display,
-            ANIM_TIMER : rtc0,
+            display : display,
+            anim_timer : rtc0,
         }
     }
 
-    #[interrupt(priority = 2,
-                resources = [DISPLAY])]
-    fn TIMER1() {
-        resources.DISPLAY.handle_event();
+    #[task(binds = TIMER1, priority = 2,
+           resources = [display])]
+    fn timer1(cx: timer1::Context) {
+        cx.resources.display.handle_event();
     }
 
-    #[interrupt(priority = 1,
-                resources = [ANIM_TIMER, DISPLAY])]
-    fn RTC0() {
+    #[task(binds = RTC0, priority = 1,
+           resources = [anim_timer, display])]
+    fn rtc0(mut cx: rtc0::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
         static mut STEP: u8 = 0;
 
-        &resources.ANIM_TIMER.clear_tick_event();
+        &cx.resources.anim_timer.clear_tick_event();
 
         let inner_brightness = match *STEP {
             0..=8 => 9-*STEP,
@@ -75,7 +77,7 @@ const APP: () = {
         };
 
         FRAME.set(&mut heart_image(inner_brightness));
-        resources.DISPLAY.lock(|display| {
+        cx.resources.display.lock(|display| {
             display.set_frame(FRAME);
         });
 

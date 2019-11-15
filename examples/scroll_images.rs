@@ -30,16 +30,18 @@ const GREY_HEART: GreyscaleImage = GreyscaleImage::new(&[
 const IMAGES: &'static [&'static GreyscaleImage] =
     &[&HEART, &BLANK, &GREY_HEART, &BLANK, &HEART];
 
-#[app(device = rmicrobit::nrf51)]
+#[app(device = rmicrobit::nrf51, peripherals = true)]
 const APP: () = {
 
-    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
-    static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
-    static mut SCROLLER: ScrollingImages<&'static GreyscaleImage> = ();
+    struct Resources {
+        display: MicrobitDisplay<nrf51::TIMER1>,
+        anim_timer: LoResTimer<nrf51::RTC0>,
+        scroller: ScrollingImages<&'static GreyscaleImage>,
+    }
 
     #[init]
-    fn init() -> init::LateResources {
-        let p: nrf51::Peripherals = device;
+    fn init(cx: init::Context) -> init::LateResources {
+        let p: nrf51::Peripherals = cx.device;
 
         // Starting the low-frequency clock (needed for RTC to work)
         p.CLOCK.tasks_lfclkstart.write(|w| unsafe { w.bits(1) });
@@ -61,27 +63,27 @@ const APP: () = {
         scroller.set_images(IMAGES);
 
         init::LateResources {
-            DISPLAY : display,
-            ANIM_TIMER : rtc0,
-            SCROLLER: scroller,
+            display : display,
+            anim_timer : rtc0,
+            scroller: scroller,
         }
     }
 
-    #[interrupt(priority = 2,
-                resources = [DISPLAY])]
-    fn TIMER1() {
-        resources.DISPLAY.handle_event();
+    #[task(binds = TIMER1, priority = 2,
+           resources = [display])]
+    fn timer1(cx: timer1::Context) {
+        cx.resources.display.handle_event();
     }
 
-    #[interrupt(priority = 1,
-                resources = [ANIM_TIMER, DISPLAY, SCROLLER])]
-    fn RTC0() {
+    #[task(binds = RTC0, priority = 1,
+           resources = [anim_timer, display, scroller])]
+    fn rtc0(mut cx: rtc0::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
-        &resources.ANIM_TIMER.clear_tick_event();
-        if !resources.SCROLLER.is_finished() {
-            resources.SCROLLER.tick();
-            FRAME.set(resources.SCROLLER);
-            resources.DISPLAY.lock(|display| {
+        &cx.resources.anim_timer.clear_tick_event();
+        if !cx.resources.scroller.is_finished() {
+            cx.resources.scroller.tick();
+            FRAME.set(cx.resources.scroller);
+            cx.resources.display.lock(|display| {
                 display.set_frame(FRAME);
             });
         }

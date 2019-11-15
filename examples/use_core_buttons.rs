@@ -40,18 +40,20 @@ impl DemoState {
 }
 
 
-#[app(device = rmicrobit::nrf51)]
+#[app(device = rmicrobit::nrf51, peripherals = true)]
 const APP: () = {
 
-    static mut BUTTON_A: ButtonA = ();
-    static mut BUTTON_B: ButtonB = ();
-    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
-    static mut DEMO: DemoState = ();
+    struct Resources {
+        button_a: ButtonA,
+        button_b: ButtonB,
+        display: MicrobitDisplay<nrf51::TIMER1>,
+        demo: DemoState,
+    }
+
 
     #[init]
-    fn init() -> init::LateResources {
-        let _core: rtfm::Peripherals = core;
-        let p: nrf51::Peripherals = device;
+    fn init(cx: init::Context) -> init::LateResources {
+        let p: nrf51::Peripherals = cx.device;
 
         let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
         let display_port = DisplayPort::new(display_pins);
@@ -64,41 +66,41 @@ const APP: () = {
         display.set_frame(&frame);
 
         init::LateResources {
-            DISPLAY : display,
-            BUTTON_A : button_a,
-            BUTTON_B : button_b,
-            DEMO: demo
+            display : display,
+            button_a : button_a,
+            button_b : button_b,
+            demo: demo
         }
     }
 
-    #[interrupt(priority = 2,
-                spawn = [handle_buttons],
-                resources = [DISPLAY])]
-    fn TIMER1() {
-        let display_event = resources.DISPLAY.handle_event();
+    #[task(binds = TIMER1, priority = 2,
+           spawn = [handle_buttons],
+           resources = [display])]
+    fn timer1(cx: timer1::Context) {
+        let display_event = cx.resources.display.handle_event();
         if display_event.is_new_row() {
-            spawn.handle_buttons().ok();
+            cx.spawn.handle_buttons().ok();
         }
     }
 
     #[task(priority = 1,
-           resources = [DISPLAY, BUTTON_A, BUTTON_B, DEMO])]
-    fn handle_buttons() {
+           resources = [display, button_a, button_b, demo])]
+    fn handle_buttons(mut cx: handle_buttons::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
-        let button_a = resources.BUTTON_A;
-        let button_b = resources.BUTTON_B;
+        let button_a = cx.resources.button_a;
+        let button_b = cx.resources.button_b;
         let mut invalidated = false;
         if let Some(event) = button_a.poll_event() {
-            resources.DEMO.handle_a(event);
+            cx.resources.demo.handle_a(event);
             invalidated = true;
         }
         if let Some(event) = button_b.poll_event() {
-            resources.DEMO.handle_b(event);
+            cx.resources.demo.handle_b(event);
             invalidated = true;
         }
         if invalidated {
-            FRAME.set(&resources.DEMO.current_graphic());
-            resources.DISPLAY.lock(|display| {
+            FRAME.set(&cx.resources.demo.current_graphic());
+            cx.resources.display.lock(|display| {
                 display.set_frame(FRAME);
             });
         }

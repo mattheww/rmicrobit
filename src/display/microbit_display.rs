@@ -66,12 +66,12 @@ impl<T: As16BitTimer> MicrobitDisplay<T> {
     ///
     /// # Example
     ///
-    /// In the style of `cortex-m-rtfm` v0.4:
+    /// In the style of `cortex-m-rtfm` v0.5:
     ///
     /// ```ignore
-    /// #[interrupt(priority = 2, resources = [DISPLAY])]
-    /// fn TIMER1() {
-    ///     let display_event = resources.DISPLAY.handle_event();
+    /// #[task(binds = TIMER1, priority = 2, resources = [display])]
+    /// fn timer1(cx: timer1::Context) {
+    ///     let display_event = cx.resources.display.handle_event();
     ///     if display_event.is_new_row() {
     ///         ...
     ///     }
@@ -91,15 +91,15 @@ impl<T: As16BitTimer> MicrobitDisplay<T> {
     ///
     /// # Example
     ///
-    /// In the style of `cortex-m-rtfm` v0.4:
+    /// In the style of `cortex-m-rtfm` v0.5:
     ///
     /// ```ignore
-    /// #[interrupt(priority = 1, resources = [RTC0, DISPLAY])]
-    /// fn RTC0() {
+    /// #[task(binds = RTC0, priority = 1, resources = [rtc0, display])]
+    /// fn rtc0(mut cx: rtc0::Context) {
     ///     static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
-    ///     &resources.RTC0.clear_tick_event();
+    ///     &cx.resources.rtc0.clear_tick_event();
     ///     FRAME.set(GreyscaleImage::blank());
-    ///     resources.DISPLAY.lock(|display| {
+    ///     cx.resources.display.lock(|display| {
     ///         display.set_frame(FRAME);
     ///     });
     /// }

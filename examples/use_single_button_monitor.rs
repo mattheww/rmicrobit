@@ -46,18 +46,19 @@ impl DemoState {
 }
 
 
-#[app(device = rmicrobit::nrf51)]
+#[app(device = rmicrobit::nrf51, peripherals = true)]
 const APP: () = {
 
-    static mut MONITOR_A: ButtonAMonitor = ();
-    static mut MONITOR_B: ButtonBMonitor = ();
-    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
-    static mut DEMO: DemoState = ();
+    struct Resources {
+        monitor_a: ButtonAMonitor,
+        monitor_b: ButtonBMonitor,
+        display: MicrobitDisplay<nrf51::TIMER1>,
+        demo: DemoState,
+    }
 
     #[init]
-    fn init() -> init::LateResources {
-        let _core: rtfm::Peripherals = core;
-        let p: nrf51::Peripherals = device;
+    fn init(cx: init::Context) -> init::LateResources {
+        let p: nrf51::Peripherals = cx.device;
 
         let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
         let display_port = DisplayPort::new(display_pins);
@@ -72,42 +73,42 @@ const APP: () = {
         display.set_frame(&frame);
 
         init::LateResources {
-            DISPLAY : display,
-            MONITOR_A : monitor_a,
-            MONITOR_B : monitor_b,
-            DEMO: demo
+            display : display,
+            monitor_a : monitor_a,
+            monitor_b : monitor_b,
+            demo: demo
         }
     }
 
-    #[interrupt(priority = 2,
-                spawn = [handle_buttons],
-                resources = [DISPLAY])]
-    fn TIMER1() {
-        let display_event = resources.DISPLAY.handle_event();
+    #[task(binds = TIMER1, priority = 2,
+           spawn = [handle_buttons],
+           resources = [display])]
+    fn timer1(cx: timer1::Context) {
+        let display_event = cx.resources.display.handle_event();
         if display_event.is_new_row() {
-            spawn.handle_buttons().ok();
+            cx.spawn.handle_buttons().ok();
         }
     }
 
     #[task(priority = 1,
-           resources = [DISPLAY, MONITOR_A, MONITOR_B, DEMO])]
-    fn handle_buttons() {
+           resources = [display, monitor_a, monitor_b, demo])]
+    fn handle_buttons(mut cx: handle_buttons::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
-        let monitor_a = resources.MONITOR_A;
-        let monitor_b = resources.MONITOR_B;
+        let monitor_a = cx.resources.monitor_a;
+        let monitor_b = cx.resources.monitor_b;
         let mut invalidated = false;
         // Note the only possible event with these monitors is Click.
         if let Some(ButtonEvent::Click) = monitor_a.poll() {
-            resources.DEMO.handle_click_a();
+            cx.resources.demo.handle_click_a();
             invalidated = true;
         }
         if let Some(ButtonEvent::Click) = monitor_b.poll() {
-            resources.DEMO.handle_click_b();
+            cx.resources.demo.handle_click_b();
             invalidated = true;
         }
         if invalidated {
-            FRAME.set(&resources.DEMO.current_graphic());
-            resources.DISPLAY.lock(|display| {
+            FRAME.set(&cx.resources.demo.current_graphic());
+            cx.resources.display.lock(|display| {
                 display.set_frame(FRAME);
             });
         }

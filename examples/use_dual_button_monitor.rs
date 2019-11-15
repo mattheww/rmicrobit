@@ -58,17 +58,18 @@ impl DemoState {
 }
 
 
-#[app(device = rmicrobit::nrf51)]
+#[app(device = rmicrobit::nrf51, peripherals = true)]
 const APP: () = {
 
-    static mut MONITOR: ABMonitor = ();
-    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
-    static mut DEMO: DemoState = ();
+    struct Resources {
+        monitor: ABMonitor,
+        display: MicrobitDisplay<nrf51::TIMER1>,
+        demo: DemoState,
+    }
 
     #[init]
-    fn init() -> init::LateResources {
-        let _core: rtfm::Peripherals = core;
-        let p: nrf51::Peripherals = device;
+    fn init(cx: init::Context) -> init::LateResources {
+        let p: nrf51::Peripherals = cx.device;
 
         let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
         let display_port = DisplayPort::new(display_pins);
@@ -82,30 +83,30 @@ const APP: () = {
         display.set_frame(&frame);
 
         init::LateResources {
-            DISPLAY : display,
-            MONITOR : monitor,
-            DEMO: demo
+            display : display,
+            monitor : monitor,
+            demo: demo
         }
     }
 
-    #[interrupt(priority = 2,
-                spawn = [handle_buttons],
-                resources = [DISPLAY])]
-    fn TIMER1() {
-        let display_event = resources.DISPLAY.handle_event();
+    #[task(binds = TIMER1, priority = 2,
+           spawn = [handle_buttons],
+           resources = [display])]
+    fn timer1(cx: timer1::Context) {
+        let display_event = cx.resources.display.handle_event();
         if display_event.is_new_row() {
-            spawn.handle_buttons().ok();
+            cx.spawn.handle_buttons().ok();
         }
     }
 
     #[task(priority = 1,
-           resources = [DISPLAY, MONITOR, DEMO])]
-    fn handle_buttons() {
+           resources = [display, monitor, demo])]
+    fn handle_buttons(mut cx: handle_buttons::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
-        if let Some(event) = resources.MONITOR.poll() {
-            resources.DEMO.handle(event);
-            FRAME.set(&resources.DEMO.current_graphic());
-            resources.DISPLAY.lock(|display| {
+        if let Some(event) = cx.resources.monitor.poll() {
+            cx.resources.demo.handle(event);
+            FRAME.set(&cx.resources.demo.current_graphic());
+            cx.resources.display.lock(|display| {
                 display.set_frame(FRAME);
             });
         }

@@ -14,12 +14,12 @@ use rmicrobit::gpio::PinsByKind;
 use rmicrobit::display::DisplayPort;
 use rmicrobit::display::pin_constants::{col_pin_number, row_pin_number, COL_PINS_MASK};
 
-#[app(device = rmicrobit::nrf51)]
+#[app(device = rmicrobit::nrf51, peripherals = true)]
 const APP: () = {
 
     #[init]
-    fn init() {
-        let p = device;
+    fn init(cx: init::Context) {
+        let p = cx.device;
         let PinsByKind {display_pins, ..} = p.GPIO.split_by_kind();
         let mut display_port = DisplayPort::new(display_pins);
         // Row whose third column is the bottom-left led

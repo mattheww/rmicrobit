@@ -16,21 +16,20 @@ mod animation;
 mod demo;
 
 
-#[app(device = rmicrobit::nrf51)]
+#[app(device = rmicrobit::nrf51, peripherals = true)]
 const APP: () = {
 
-    static mut ANIM_TIMER: LoResTimer<nrf51::RTC0> = ();
-    static mut DISPLAY: MicrobitDisplay<nrf51::TIMER1> = ();
-    static mut BUTTON_MONITOR: ABMonitor = ();
-    static mut DEMO: demo::Demo = ();
+    struct Resources {
+        anim_timer: LoResTimer<nrf51::RTC0>,
+        display: MicrobitDisplay<nrf51::TIMER1>,
+        button_monitor: ABMonitor,
+        demo: demo::Demo,
+    }
 
     #[init]
-    fn init() -> init::LateResources {
-        // Cortex-M peripherals
-        let _core: rtfm::Peripherals = core;
-
+    fn init(cx: init::Context) -> init::LateResources {
         // nrf51 peripherals
-        let p: nrf51::Peripherals = device;
+        let p: nrf51::Peripherals = cx.device;
 
         let PinsByKind {display_pins, button_pins, ..} = p.GPIO.split_by_kind();
         let display_port = DisplayPort::new(display_pins);
@@ -55,52 +54,52 @@ const APP: () = {
         rtc0.start();
 
         init::LateResources {
-            DISPLAY : display,
-            ANIM_TIMER : rtc0,
-            DEMO : demo::Demo::new(),
-            BUTTON_MONITOR : button_monitor,
+            display : display,
+            anim_timer : rtc0,
+            demo : demo::Demo::new(),
+            button_monitor : button_monitor,
         }
     }
 
-    #[interrupt(priority = 2,
-                spawn = [handle_buttons],
-                resources = [DISPLAY])]
-    fn TIMER1() {
-        let display_event = resources.DISPLAY.handle_event();
+    #[task(binds = TIMER1, priority = 2,
+           spawn = [handle_buttons],
+           resources = [display])]
+    fn timer1(cx: timer1::Context) {
+        let display_event = cx.resources.display.handle_event();
         if display_event.is_new_row() {
-            spawn.handle_buttons().ok();
+            cx.spawn.handle_buttons().ok();
         }
     }
 
     #[task(priority = 1,
-           resources = [DISPLAY, BUTTON_MONITOR, DEMO])]
-    fn handle_buttons() {
+           resources = [display, button_monitor, demo])]
+    fn handle_buttons(mut cx: handle_buttons::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
-        if let Some(event) = resources.BUTTON_MONITOR.poll() {
-            resources.DEMO.handle_button_event(event);
-            if resources.DEMO.is_static() {
-                FRAME.set(resources.DEMO.current_image());
-                resources.DISPLAY.lock(|display| {
+        if let Some(event) = cx.resources.button_monitor.poll() {
+            cx.resources.demo.handle_button_event(event);
+            if cx.resources.demo.is_static() {
+                FRAME.set(cx.resources.demo.current_image());
+                cx.resources.display.lock(|display| {
                     display.set_frame(FRAME);
                 });
             }
         }
     }
 
-    #[interrupt(priority = 1,
-                resources = [ANIM_TIMER, DISPLAY, DEMO])]
-    fn RTC0() {
+    #[task(binds = RTC0, priority = 1,
+           resources = [anim_timer, display, demo])]
+    fn rtc0(mut cx: rtc0::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
 
-        &resources.ANIM_TIMER.clear_tick_event();
-        if resources.DEMO.is_animating() {
-            FRAME.set(&resources.DEMO.next_animation_frame());
-        } else if resources.DEMO.is_scrolling() {
-            FRAME.set(resources.DEMO.next_scrolling_frame());
+        &cx.resources.anim_timer.clear_tick_event();
+        if cx.resources.demo.is_animating() {
+            FRAME.set(&cx.resources.demo.next_animation_frame());
+        } else if cx.resources.demo.is_scrolling() {
+            FRAME.set(cx.resources.demo.next_scrolling_frame());
         } else {
             return
         }
-        resources.DISPLAY.lock(|display| {
+        cx.resources.display.lock(|display| {
             display.set_frame(FRAME);
         });
     }
