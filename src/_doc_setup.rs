@@ -61,4 +61,11 @@
 //! To change which version of `gdb` it runs, edit `.cargo/config`. To change
 //! the instructions that `gdb` follows, edit `microbit.gdb`.
 //!
+//! ### Tips
+//!
+//! If you use `panic_semihosting`, as the example `main.rs` from the template
+//! does, messages from any panics should appear in the output from openocd.
+//! If other output from openocd is getting in the way, add something like `-l
+//! /tmp/openocd.log` to the command line used to launch openocd.
+//!
 //! [The Embedded Rust Book]: https://rust-embedded.github.io/book/intro/install.html
