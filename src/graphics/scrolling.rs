@@ -40,10 +40,8 @@
 //!
 //! See examples/scroll_images.rs for a complete example.
 //!
-//! [`Scrollable`]: scrolling::Scrollable
-//! [`ScrollingImages`]: scrolling::ScrollingImages
-//! [`Animate`]: scrolling::Animate
-//! [`Render`]: tiny_led_matrix::Render
+//! [`Render`]: crate::display::Render
+//! [`scrolling_text`]: crate::graphics::scrolling_text
 
 use tiny_led_matrix::Render;
 

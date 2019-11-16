@@ -16,39 +16,39 @@
 //!
 //! # Simple images
 //!
-//! The [`graphics::image`] module provides two static image types
-//! implementing `Render`:
+//! The [`image`] module provides two static image types implementing
+//! `Render`:
 //!
 //! - [`GreyscaleImage`], allowing all 10 levels (using one byte for each LED)
 //! - [`BitImage`], allowing only 'on' and 'off' (using five bytes)
 //!
 //! # Fonts
 //!
-//! The [`graphics::font`] module provides 5×5 representations of the ascii
-//! printable characters as [`BitImage`]s.
+//! The [`font`] module provides 5×5 representations of the ascii printable
+//! characters as [`BitImage`]s.
 //!
 //! These are taken from the "pendolino" font supplied with the
 //! [micro:bit runtime][dal].
 //!
 //! # Scrolling images and text
 //!
-//! The [`graphics::scrolling`] module supports horizontal scrolling for a
-//! sequence of images via a [`ScrollingImages`] type which implements
-//! `Render` and an [`Animate`] interface.
+//! The [`scrolling`] module supports horizontal scrolling for a sequence of
+//! images via a [`ScrollingImages`] type which implements `Render` and an
+//! [`Animate`] interface.
 //!
-//! The [`graphics::scrolling_text`] module supports scrolling messages,
-//! providing [`ScrollingStaticText`] and [`ScrollingBufferedText`] types.
+//! The [`scrolling_text`] module supports scrolling messages, providing
+//! [`ScrollingStaticText`] and [`ScrollingBufferedText`] types.
 //!
 //! [dal]: https://lancaster-university.github.io/microbit-docs/
 //! [greyscale]: crate::display
-//! [`Animate`]: graphics::scrolling::Animate
-//! [`BitImage`]: graphics::image::BitImage
-//! [`GreyscaleImage`]: graphics::image::GreyscaleImage
+//! [`Animate`]: scrolling::Animate
+//! [`BitImage`]: image::BitImage
+//! [`GreyscaleImage`]: image::GreyscaleImage
 //! [`display::Render`]: crate::display::Render
-//! [`Scrollable`]: graphics::scrolling::Scrollable
-//! [`ScrollingImages`]: graphics::scrolling::ScrollingImages
-//! [`ScrollingBufferedText`]: graphics::scrolling_text::ScrollingBufferedText
-//! [`ScrollingStaticText`]: graphics::scrolling_text::ScrollingStaticText
+//! [`Scrollable`]: scrolling::Scrollable
+//! [`ScrollingImages`]: scrolling::ScrollingImages
+//! [`ScrollingBufferedText`]: scrolling_text::ScrollingBufferedText
+//! [`ScrollingStaticText`]: scrolling_text::ScrollingStaticText
 
 pub mod font;
 pub mod image;

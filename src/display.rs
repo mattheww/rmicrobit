@@ -43,7 +43,7 @@
 //! to provide in order to be displayed.
 //!
 //! It contains a single function:
-//! [`brightness_at(x, y)`][display::Render::brightness_at],
+//! [`brightness_at(x, y)`][Render::brightness_at],
 //! returning a brightness level.
 //!
 //! The [`graphics`] module provides a number of implementations of `Render`.
@@ -108,7 +108,7 @@
 //! [`handle_event()`] method.
 //!
 //! To change what's displayed: create a [`MicrobitFrame`] instance, use
-//! [`.set()`](`display::Frame::set()`) to put an image (something
+//! [`.set()`](`Frame::set()`) to put an image (something
 //! implementing [`Render`]) in it, then call the `MicrobitDisplay`'s
 //! [`set_frame()`][set_frame] method.
 //!
@@ -125,15 +125,9 @@
 //!
 //! [`DisplayPins`]: crate::gpio::DisplayPins
 //! [`GPIO.split_by_kind()`]: crate::gpio::MicrobitGpioExt::split_by_kind
-//! [`DisplayPort`]: display::DisplayPort
-//! [`DisplayPort::new()`]: display::DisplayPort::new
-//! [`MicrobitDisplay`]: display::MicrobitDisplay
-//! [`MicrobitDisplay::new()`]: display::MicrobitDisplay::new
-//! [set_frame]: display::MicrobitDisplay::set_frame
-//! [`handle_event()`]: display::MicrobitDisplay::handle_event
-//! [`MicrobitFrame`]: display::MicrobitFrame
-//! [`Render`]: display::Render
-//! [`doc_example`]: display::doc_example
+//! [`graphics`]: crate::graphics
+//! [set_frame]: MicrobitDisplay::set_frame
+//! [`handle_event()`]: MicrobitDisplay::handle_event
 //!
 
 #[doc(no_inline)]

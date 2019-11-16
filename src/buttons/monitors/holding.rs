@@ -3,6 +3,9 @@
 //! This is part of the implementation of the [`single_with_hold`] and
 //! [`dual_with_hold`] button monitors, public so that it's possible to make
 //! variants with different timings.
+//!
+//! [`single_with_hold`]: crate::buttons::monitors::single_with_hold
+//! [`dual_with_hold`]: crate::buttons::monitors::dual_with_hold
 
 use core::ops::AddAssign;
 use crate::buttons::core::Transition;

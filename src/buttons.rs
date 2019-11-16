@@ -52,11 +52,10 @@
 //!
 //! ## Lower-level access
 //!
-//! See the [`buttons::core`] module if none of the event types above are
-//! suitable for your purposes, or to use an external button.
+//! See the [`core`] module if none of the event types above are suitable for
+//! your purposes, or to use an external button.
 //!
-//! See the [`buttons::debouncing`] module if you need to control debouncing
-//! behaviour.
+//! See the [`debouncing`] module if you need to control debouncing behaviour.
 //!
 //! # Examples
 //!
