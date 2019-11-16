@@ -2,11 +2,12 @@
 name = "rmicrobit"
 version = "0.4.0"
 edition = "2018"
-description = "Drive the micro:bit 5×5 LED display."
+description = "Drivers for the micro:bit 5×5 LED display and buttons."
 authors = ["Matthew Woodcraft <matthew@woodcraft.me.uk>"]
 documentation = "https://docs.rs/rmicrobit"
 license = "MIT"
 readme = "README.md"
+keywords = ["microbit", "arm", "cortex-m", "nordic", "nrf51"]
 repository = "https://github.com/mattheww/rmicrobit/"
 
 [dependencies]
