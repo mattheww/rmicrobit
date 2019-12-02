@@ -1,3 +1,6 @@
+* Fix mistake in "Coordinate system" docs
+
+
 ## rmicrobit 1.0.0 (2019-11-16)
 
 * Fix intra-crate links in doc-comments to work with current nightly rustdoc
