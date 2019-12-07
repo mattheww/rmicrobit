@@ -72,7 +72,7 @@ pub trait Animate {
 pub struct ScrollingState {
     // index of the character being scrolled on, or about to be scrolled on
     index: usize,
-    // 0..4
+    // 0..5
     pixel: usize,
 }
 
