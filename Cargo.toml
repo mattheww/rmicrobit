@@ -1,6 +1,6 @@
 [package]
 name = "rmicrobit"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2018"
 description = "Drivers for the micro:bit 5×5 LED display and buttons."
 authors = ["Matthew Woodcraft <matthew@woodcraft.me.uk>"]

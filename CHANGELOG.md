@@ -1,3 +1,5 @@
+## rmicrobit 1.0.1 (2019-12-08)
+
 * Fix mistake in "Coordinate system" docs
 
 
