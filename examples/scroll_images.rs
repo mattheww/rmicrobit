@@ -27,7 +27,7 @@ const GREY_HEART: GreyscaleImage = GreyscaleImage::new(&[
     [0, 9, 5, 9, 0],
     [0, 0, 9, 0, 0],
 ]);
-const IMAGES: &'static [&'static GreyscaleImage] =
+const IMAGES: &[&GreyscaleImage] =
     &[&HEART, &BLANK, &GREY_HEART, &BLANK, &HEART];
 
 #[app(device = rmicrobit::nrf51, peripherals = true)]
