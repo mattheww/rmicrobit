@@ -91,7 +91,7 @@ const APP: () = {
     fn rtc0(mut cx: rtc0::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
 
-        &cx.resources.anim_timer.clear_tick_event();
+        cx.resources.anim_timer.clear_tick_event();
         if cx.resources.demo.is_animating() {
             FRAME.set(&cx.resources.demo.next_animation_frame());
         } else if cx.resources.demo.is_scrolling() {

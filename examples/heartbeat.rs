@@ -68,7 +68,7 @@ const APP: () = {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
         static mut STEP: u8 = 0;
 
-        &cx.resources.anim_timer.clear_tick_event();
+        cx.resources.anim_timer.clear_tick_event();
 
         let inner_brightness = match *STEP {
             0..=8 => 9-*STEP,

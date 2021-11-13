@@ -79,7 +79,7 @@ const APP: () = {
            resources = [anim_timer, display, scroller])]
     fn rtc0(mut cx: rtc0::Context) {
         static mut FRAME: MicrobitFrame = MicrobitFrame::const_default();
-        &cx.resources.anim_timer.clear_tick_event();
+        cx.resources.anim_timer.clear_tick_event();
         if !cx.resources.scroller.is_finished() {
             cx.resources.scroller.tick();
             FRAME.set(cx.resources.scroller);
