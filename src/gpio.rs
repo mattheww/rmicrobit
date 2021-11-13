@@ -147,6 +147,7 @@ pub struct OtherPins {
 }
 
 /// The micro:bit's GPIO pins, organised in functional groups.
+#[non_exhaustive]
 pub struct PinsByKind {
     pub display_pins: DisplayPins,
     pub button_pins: ButtonPins,
@@ -154,7 +155,6 @@ pub struct PinsByKind {
     pub i2c_pins: I2cPins,
     pub edge_connector_pins: EdgeConnectorPins,
     pub other_pins: OtherPins,
-    _reserved: (),
 }
 
 /// Extension trait to split the GPIO peripheral into functional groups.
@@ -218,7 +218,6 @@ impl MicrobitGpioExt for GPIO {
             i2c_pins,
             edge_connector_pins,
             other_pins,
-            _reserved: (),
         }
     }
 
