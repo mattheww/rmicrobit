@@ -47,7 +47,7 @@ const fn font_entry(data: [u8; 5]) -> BitImage {
         ((byte & 1<<2) != 0) as u8,
         ((byte & 1<<1) != 0) as u8,
         ((byte & 1<<0) != 0) as u8,
-    ]};
+    ]}
     BitImage::new(&[
         row_bits(data[0]),
         row_bits(data[1]),

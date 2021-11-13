@@ -65,7 +65,7 @@ impl FunctionalAnimation {
     const BLANK: FunctionalAnimation = FunctionalAnimation {
         length: 1,
         render: {
-            fn blank(_index: usize) -> GreyscaleImage {GreyscaleImage::blank()};
+            fn blank(_index: usize) -> GreyscaleImage {GreyscaleImage::blank()}
             blank
         },
     };
