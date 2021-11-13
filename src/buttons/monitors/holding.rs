@@ -13,13 +13,13 @@ use crate::buttons::core::Transition;
 /// Description of the number of ticks to treat as a 'hold'.
 pub trait HoldDescriptor: {
     /// Integer type wide enough to hold the tick count
-    type width: PartialOrd + AddAssign + Copy;
+    type Width: PartialOrd + AddAssign + Copy;
     /// Zero of the `width` type
-    const HOLD_START: Self::width;
+    const HOLD_START: Self::Width;
     /// One of the `width` type
-    const HOLD_INCREMENT: Self::width;
+    const HOLD_INCREMENT: Self::Width;
     /// The number of ticks
-    const HOLD_TICKS: Self::width;
+    const HOLD_TICKS: Self::Width;
 }
 
 /// The default `HoldDescriptor`.
@@ -28,7 +28,7 @@ pub trait HoldDescriptor: {
 pub struct DefaultHoldDescriptor ();
 
 impl HoldDescriptor for DefaultHoldDescriptor {
-    type width = u8;
+    type Width = u8;
     const HOLD_START: u8 = 0;
     const HOLD_INCREMENT: u8 = 1;
     const HOLD_TICKS: u8 = 250;
@@ -50,7 +50,7 @@ pub enum Event {
 /// A hold-detection algorithm and associated state.
 #[derive(Debug)]
 pub struct HoldAnnotator<T: HoldDescriptor> {
-    counter: T::width,
+    counter: T::Width,
 }
 
 impl<T: HoldDescriptor> HoldAnnotator<T> {
