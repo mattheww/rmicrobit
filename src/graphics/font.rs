@@ -32,7 +32,7 @@ const UNKNOWN: BitImage = BitImage::new(&[
 /// `font::character(b'x')`
 pub fn character(index: u8) -> &'static BitImage {
     let index = index as usize;
-    if index < PRINTABLE_START || index >= PRINTABLE_START + PRINTABLE_COUNT {
+    if !(PRINTABLE_START..PRINTABLE_START + PRINTABLE_COUNT).contains(&index) {
         return &UNKNOWN;
     }
     &self::pendolino::PENDOLINO3[index - PRINTABLE_START]
