@@ -76,7 +76,7 @@ const APP: () = {
             _ => unreachable!()
         };
 
-        FRAME.set(&mut heart_image(inner_brightness));
+        FRAME.set(&heart_image(inner_brightness));
         cx.resources.display.lock(|display| {
             display.set_frame(FRAME);
         });
